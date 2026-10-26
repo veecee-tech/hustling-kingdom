@@ -1,0 +1,15 @@
+pnpm-lock.yaml
+node_modules
+dist
+coverage
+playwright-report
+test-results
+apps/api/src/generated
+docs/GDD.md
+docs/ECONOMY.md
+docs/ARCHITECTURE.md
+docs/DATABASE.md
+docs/API.md
+docs/SECURITY.md
+docs/ROADMAP.md
+AGENTS.md

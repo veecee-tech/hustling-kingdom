@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  '@prisma/engines': true
+  '@nestjs/core': true
+  esbuild: true
+  prisma: true
+  '@prisma/client': true
+  '@scarf/scarf': false
+  msgpackr-extract: false
+  '@tailwindcss/oxide': true

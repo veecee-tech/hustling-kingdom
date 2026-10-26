@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# Markdown hard breaks deliberately use two trailing spaces in the supplied specs.
+*.md whitespace=-blank-at-eol
