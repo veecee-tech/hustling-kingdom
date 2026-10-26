@@ -39,8 +39,16 @@ it('boots the real application with PostgreSQL, Redis and BullMQ', async () => {
     expect(result.body).toEqual({ status: 'ok' });
   }
   const spec = await request(app.getHttpServer()).get('/api/v1/docs-json');
-  expect(Object.keys(spec.body.paths).sort()).toEqual([
-    '/health/live',
-    '/health/ready',
-  ]);
+  expect(Object.keys(spec.body.paths)).toEqual(
+    expect.arrayContaining([
+      '/health/live',
+      '/health/ready',
+      '/api/v1/auth/register',
+      '/api/v1/auth/login',
+      '/api/v1/auth/refresh',
+      '/api/v1/auth/logout',
+      '/api/v1/auth/logout-all',
+      '/api/v1/me',
+    ]),
+  );
 });

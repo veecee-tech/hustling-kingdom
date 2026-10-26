@@ -9,6 +9,11 @@ export interface Environment {
   webOrigin: string;
   databaseUrl: string;
   redisUrl: string;
+  accessSecret: string;
+  accessTtlSeconds: number;
+  refreshTtlSeconds: number;
+  authRateLimit: number;
+  authRateWindowSeconds: number;
 }
 
 /** Messages contain configuration key names only, never supplied values. */
@@ -55,12 +60,43 @@ export function validateEnvironment(source: NodeJS.ProcessEnv): Environment {
     }
     return value;
   };
+  const integer = (
+    key: string,
+    fallback: number,
+    min: number,
+    max: number,
+  ): number => {
+    const value = Number(source[key] ?? fallback);
+    if (!Number.isInteger(value) || value < min || value > max)
+      throw new ConfigurationError(`Invalid ${key}.`);
+    return value;
+  };
+  const accessSecret = required('JWT_ACCESS_SECRET');
+  if (
+    Buffer.byteLength(accessSecret) < 32 ||
+    (mode === 'production' &&
+      /development|placeholder|change.?me/i.test(accessSecret))
+  ) {
+    throw new ConfigurationError(
+      'Invalid JWT_ACCESS_SECRET; supply a private random secret of at least 32 bytes.',
+    );
+  }
   return {
     nodeEnv: mode as Environment['nodeEnv'],
     port,
     webOrigin,
     databaseUrl: connection('DATABASE_URL', ['postgres:', 'postgresql:']),
     redisUrl: connection('REDIS_URL', ['redis:', 'rediss:']),
+    accessSecret,
+    accessTtlSeconds: integer('JWT_ACCESS_TTL_SECONDS', 600, 30, 900),
+    refreshTtlSeconds: integer(
+      'REFRESH_TOKEN_TTL_SECONDS',
+      604800,
+      300,
+      2592000,
+    ),
+    authRateLimit: integer('AUTH_RATE_LIMIT', 30, 1, 10000),
+    authRateWindowSeconds: integer('AUTH_RATE_WINDOW_SECONDS', 60, 1, 3600),
   };
 }
 

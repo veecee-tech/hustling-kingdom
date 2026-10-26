@@ -4,10 +4,13 @@ import App from './App.vue';
 import { router } from './router';
 import { useSystemStore } from './stores/system';
 import './assets/main.css';
+import { useAuthStore } from './features/auth/store';
+import { installAuthGuard } from './features/auth/route-guard';
 
 const app = createApp(App);
 const pinia = createPinia();
 app.use(pinia);
+installAuthGuard(router, useAuthStore(pinia));
 app.use(router);
 app.config.errorHandler = () => {
   useSystemStore(pinia).applicationError =

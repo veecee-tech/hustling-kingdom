@@ -7,14 +7,28 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
-  use: { baseURL: 'http://127.0.0.1:5173', trace: 'retain-on-failure' },
+  use: { baseURL: 'http://127.0.0.1:5174', trace: 'off' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    // Launch Vite directly so Windows teardown does not leave a pnpm child running.
-    command:
-      'node node_modules/vite/bin/vite.js apps/web --config apps/web/vite.config.ts --host 127.0.0.1',
-    url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env.CI,
-    env: { VITE_API_BASE_URL: 'http://127.0.0.1:3000' },
-  },
+  webServer: [
+    {
+      // Launch Vite directly so Windows teardown does not leave a pnpm child running.
+      command:
+        'node node_modules/vite/bin/vite.js apps/web --config apps/web/vite.config.ts --host 127.0.0.1 --port 5174',
+      url: 'http://127.0.0.1:5174',
+      reuseExistingServer: false,
+      env: { VITE_API_BASE_URL: 'http://127.0.0.1:3100' },
+    },
+    {
+      command: 'node apps/api/dist/main.js',
+      url: 'http://127.0.0.1:3100/health/ready',
+      reuseExistingServer: false,
+      env: {
+        API_PORT: '3100',
+        WEB_ORIGIN: 'http://127.0.0.1:5174',
+        NODE_ENV: 'test',
+        AUTH_RATE_LIMIT: '1000',
+        REDIS_URL: 'redis://127.0.0.1:6379/2',
+      },
+    },
+  ],
 });

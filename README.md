@@ -33,9 +33,9 @@ Testing: Vitest, integration tests and Playwright.
 
 Implement one roadmap phase at a time. Do not ask Codex to build the entire game in one run.
 
-The first implementation target is `ROADMAP.md` Phase 0.
+Phase 0 provides the foundation. Phase 1 adds account authentication only.
 
-## Phase 0 developer setup
+## Developer setup
 
 Prerequisites: Node.js 22.13+ on the 22 LTS line (or Node 24+), pnpm 11.25.0,
 Docker with Compose, and available local ports 3000, 5173, 5432 and 6379.
@@ -65,15 +65,15 @@ to the deployment environment; Phase 0 does not deploy infrastructure.
 
 ### Database workflow
 
-The Prisma schema contains no domain models. A reviewed, no-table baseline
-migration establishes migration history without starting Phase 1. Generated
+The Prisma schema contains only users and authentication sessions. The Phase 0
+no-table baseline is followed by the Phase 1 authentication migration. Generated
 Prisma code is ignored and must be regenerated after installation/schema changes.
 
 `pnpm prisma:migrate` applies development migrations. When adding a schema change
 in a later phase, run `pnpm --filter @hk/api exec prisma migrate dev --name descriptive_name`,
 review the SQL, then regenerate the client. Commit the schema and migration together.
 Use `pnpm prisma:deploy` to apply committed migrations in CI/release workflows;
-do not use `db push` as a deployment strategy. No seed data is needed in Phase 0.
+do not use `db push` as a deployment strategy. Registration replaces any need for seeded credentials.
 
 ### Quality commands
 
@@ -89,10 +89,13 @@ pnpm format:check
 ```
 
 Integration tests require running PostgreSQL and Redis and the generated Prisma
-client. Unit tests mock external services. Playwright starts Vite automatically
-and intercepts readiness requests for deterministic browser smoke tests; live
-dependency connectivity is covered separately by integration tests. CI runs all
-these checks with PostgreSQL and Redis service containers.
+client. Unit tests mock external services. Playwright starts dedicated API/web servers
+on ports 3100/5174 and runs the real authentication journey with randomized identities.
+Readiness-only browser smoke tests intercept their infrastructure requests.
+Authentication integration tests use Redis database 1; Playwright uses database 2.
+Reserve both for this project's tests. PostgreSQL fixtures use randomized identities;
+integration fixtures are removed after tests, while browser fixtures remain as test accounts.
+CI runs these same suites with PostgreSQL and Redis service containers.
 
 `pnpm format` formats implementation files without rewriting the source-of-truth
 specifications. Shared packages build before development, typecheck and tests.
@@ -111,8 +114,8 @@ included in the standard error envelope. Responses and logs omit dependency
 credentials and exception details. Startup requires valid configuration and
 reachable dependencies. CORS accepts the single explicit `WEB_ORIGIN`.
 
-The API client centralizes JSON, safe errors, timeouts, request IDs and optional
-authorization/idempotency headers. There is no token storage, refresh or auth flow.
+The API client centralizes JSON, safe errors, timeouts, request IDs,
+authorization/idempotency headers and coordinated session refresh.
 Socket.IO is configured only as a transport adapter, with no public gateway;
 authenticated events and presence are future work. BullMQ has one infrastructure
 queue, no workers and no scheduled gameplay. Phaser is deferred to Phase 20.
@@ -129,4 +132,30 @@ packages/config        Public protocol constants only
 infrastructure         Development infrastructure notes
 ```
 
-Phase 1 authentication and all gameplay remain intentionally unimplemented.
+## Authentication development notes
+
+After updating an existing checkout, add the auth variables from `.env.example`,
+then run `pnpm install`, `pnpm prisma:generate` and `pnpm prisma:migrate`.
+Use `http://127.0.0.1` consistently for the web app and API; mixing `localhost`
+and `127.0.0.1` breaks the same-site refresh cookie.
+
+- `JWT_ACCESS_SECRET`: supplied signing secret, at least 32 bytes. The example is
+  a public development fixture which production configuration explicitly rejects.
+- `JWT_ACCESS_TTL_SECONDS`: 600 by default, allowed range 30–900.
+- `REFRESH_TOKEN_TTL_SECONDS`: absolute session lifetime; defaults to seven days.
+- `AUTH_RATE_LIMIT` / `AUTH_RATE_WINDOW_SECONDS`: attempts per endpoint/IP/window,
+  default 30 attempts in 60 seconds; backed by Redis and fails closed on outage.
+
+Open `/register`, `/login` or the protected `/account` page. The access token stays
+in memory; the HttpOnly refresh cookie restores the session after reload.
+Production uses Secure, SameSite=Strict cookies and requires same-site HTTPS web/API
+origins. Auth POSTs require the configured `Origin` and `X-HK-Client: web` header;
+the central browser client sets the custom header and includes cookies explicitly.
+CLI/API clients must supply those headers too. OpenAPI describes the requests.
+
+Tests participate in the existing `pnpm test`, `pnpm test:integration` and
+`pnpm test:e2e` commands. Browser traces are disabled so credentials do not enter
+trace artifacts. See [authentication design](docs/AUTHENTICATION.md) for session,
+revocation and deployment details.
+
+Phase 2 character creation and all gameplay remain intentionally unimplemented.

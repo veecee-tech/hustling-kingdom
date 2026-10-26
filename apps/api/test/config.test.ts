@@ -7,8 +7,26 @@ const valid = {
   WEB_ORIGIN: 'https://web.example.com',
   DATABASE_URL: 'postgresql://localhost/test',
   REDIS_URL: 'redis://localhost:6379',
+  JWT_ACCESS_SECRET: 'test-fixture-not-a-real-secret-0123456789',
 };
 describe('server configuration', () => {
+  it('requires a strong supplied secret and bounded lifetimes/rate limits', () => {
+    for (const JWT_ACCESS_SECRET of [
+      '',
+      'short',
+      'development-only-public-secret-never-use-in-production',
+    ])
+      expect(() =>
+        validateEnvironment({ ...valid, JWT_ACCESS_SECRET }),
+      ).toThrow('JWT_ACCESS_SECRET');
+    for (const key of [
+      'JWT_ACCESS_TTL_SECONDS',
+      'REFRESH_TOKEN_TTL_SECONDS',
+      'AUTH_RATE_LIMIT',
+      'AUTH_RATE_WINDOW_SECONDS',
+    ])
+      expect(() => validateEnvironment({ ...valid, [key]: '-1' })).toThrow(key);
+  });
   it('parses valid settings', () => {
     expect(validateEnvironment(valid).port).toBe(3000);
   });

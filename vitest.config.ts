@@ -1,10 +1,12 @@
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
+import { apiTestTransform } from './infrastructure/test-api-transform';
 
 export default defineConfig({
   test: {
     projects: [
       {
+        plugins: [apiTestTransform()],
         test: {
           name: 'node',
           environment: 'node',

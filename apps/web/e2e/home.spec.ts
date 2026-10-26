@@ -1,5 +1,21 @@
 import { expect, test } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/v1/auth/refresh', (route) =>
+    route.fulfill({
+      status: 401,
+      json: {
+        error: {
+          code: 'INVALID_REFRESH_TOKEN',
+          message: 'Invalid session.',
+          details: {},
+          requestId: 'req_smoke',
+        },
+      },
+    }),
+  );
+});
+
 test('home boots with router, store, API client and Tailwind', async ({
   page,
 }) => {

@@ -32,12 +32,14 @@ export function setupApplication(app: INestApplication): void {
   app.use(helmet());
   app.enableCors({
     origin: config.webOrigin,
+    credentials: true,
     exposedHeaders: [REQUEST_ID_HEADER],
     allowedHeaders: [
       'Content-Type',
       'Authorization',
       'Idempotency-Key',
       REQUEST_ID_HEADER,
+      'X-HK-Client',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
@@ -68,8 +70,12 @@ export function setupApplication(app: INestApplication): void {
     app,
     new DocumentBuilder()
       .setTitle('Hustling Kingdom API')
-      .setDescription('Phase 0 infrastructure endpoints. No gameplay API yet.')
-      .setVersion('0.0.0')
+      .setDescription(
+        'Account authentication and infrastructure. No gameplay API yet.',
+      )
+      .addBearerAuth()
+      .addCookieAuth('hk_refresh')
+      .setVersion('0.1.0')
       .build(),
   );
   SwaggerModule.setup(`${API_PREFIX}/docs`, app, document);

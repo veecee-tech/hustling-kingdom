@@ -19,6 +19,10 @@ export interface RequestOptions {
   authorization?: string;
   idempotencyKey?: string;
   signal?: AbortSignal;
+  credentials?: RequestCredentials;
+  csrf?: boolean;
+  authenticated?: boolean;
+  retryAuthentication?: boolean;
 }
 
 function isErrorEnvelope(value: unknown): value is ApiErrorEnvelope {
@@ -40,9 +44,22 @@ export function createApiClient(
   baseUrl: string,
   transport: typeof fetch = fetch,
 ) {
+  let authentication:
+    | {
+        accessToken: () => string | null;
+        refresh: () => Promise<boolean>;
+        onUnauthorized?: () => void;
+      }
+    | undefined;
+  function configureAuthentication(
+    hooks: NonNullable<typeof authentication>,
+  ): void {
+    authentication = hooks;
+  }
   async function request<T>(
     path: string,
     options: RequestOptions = {},
+    retried = false,
   ): Promise<T> {
     if (!path.startsWith('/') || path.startsWith('//'))
       throw new Error('API paths must be relative to the configured origin.');
@@ -51,6 +68,11 @@ export function createApiClient(
       headers.set('Content-Type', 'application/json');
     if (options.authorization)
       headers.set('Authorization', options.authorization);
+    const accessToken = options.authenticated
+      ? authentication?.accessToken()
+      : undefined;
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+    if (options.csrf) headers.set('X-HK-Client', 'web');
     if (options.idempotencyKey)
       headers.set('Idempotency-Key', options.idempotencyKey);
     let response: Response;
@@ -61,6 +83,7 @@ export function createApiClient(
         body:
           options.body === undefined ? undefined : JSON.stringify(options.body),
         signal: options.signal ?? AbortSignal.timeout(5000),
+        credentials: options.credentials ?? 'omit',
       });
     } catch {
       throw new ApiError(
@@ -75,6 +98,21 @@ export function createApiClient(
         ? undefined
         : await response.json().catch(() => undefined);
     if (!response.ok) {
+      if (
+        response.status === 401 &&
+        options.authenticated &&
+        options.retryAuthentication !== false &&
+        !retried &&
+        authentication
+      ) {
+        const alreadyRefreshed =
+          authentication.accessToken() &&
+          authentication.accessToken() !== accessToken;
+        if (alreadyRefreshed || (await authentication.refresh()))
+          return request<T>(path, options, true);
+      }
+      if (response.status === 401 && options.authenticated)
+        authentication?.onUnauthorized?.();
       if (isErrorEnvelope(payload))
         throw new ApiError(
           response.status,
@@ -99,6 +137,7 @@ export function createApiClient(
     return payload as T;
   }
   return {
+    configureAuthentication,
     request,
     live: () => request<HealthStatus>('/health/live'),
     ready: () => request<HealthStatus>('/health/ready'),

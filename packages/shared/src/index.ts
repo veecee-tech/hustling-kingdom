@@ -9,3 +9,20 @@ export interface ApiErrorEnvelope {
 export interface HealthStatus {
   status: 'ok';
 }
+
+export type AccountRole = 'PLAYER' | 'MODERATOR' | 'ADMIN' | 'SUPER_ADMIN';
+export interface AccountUser {
+  id: string;
+  email: string;
+  username: string;
+  role: AccountRole;
+}
+export interface AuthSessionResponse {
+  user: AccountUser;
+  accessToken: string;
+  expiresIn: number;
+}
+export interface MeResponse {
+  user: AccountUser;
+  character: null;
+}
