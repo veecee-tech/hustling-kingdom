@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module.js';
+import { MeController } from '../account/me.controller.js';
+import { CharacterController } from './character.controller.js';
+import { CharacterService } from './character.service.js';
+
+@Module({
+  imports: [AuthModule],
+  controllers: [CharacterController, MeController],
+  providers: [CharacterService],
+})
+export class CharactersModule {}

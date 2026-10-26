@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, Length, Matches, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { CharacterDto } from '../characters/character.dto.js';
 
 export const normalizeIdentity = (value: string): string =>
   value.trim().toLowerCase();
@@ -74,11 +75,6 @@ export class SessionDto {
 }
 export class MeDto {
   @ApiProperty({ type: UserDto }) user!: UserDto;
-  @ApiProperty({
-    type: 'object',
-    additionalProperties: false,
-    nullable: true,
-    example: null,
-  })
-  character!: null;
+  @ApiProperty({ type: CharacterDto, nullable: true })
+  character!: CharacterDto | null;
 }

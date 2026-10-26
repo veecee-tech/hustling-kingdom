@@ -8,7 +8,14 @@ export function installAuthGuard(
   router.beforeEach(async (to) => {
     await auth.initialize();
     if (to.meta.requiresAuth && !auth.authenticated) return { name: 'login' };
-    if (to.meta.guestOnly && auth.authenticated) return { name: 'account' };
+    if (auth.authenticated) {
+      if (to.meta.requiresCharacter && !auth.character)
+        return { name: 'create-character' };
+      if (to.name === 'create-character' && auth.character)
+        return { name: 'account' };
+      if (to.meta.guestOnly)
+        return { name: auth.character ? 'account' : 'create-character' };
+    }
     return true;
   });
 }

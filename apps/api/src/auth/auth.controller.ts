@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   Inject,
   Post,
@@ -33,7 +32,7 @@ import {
   CurrentAccount,
   type Principal,
 } from './auth.guards.js';
-import { LoginDto, MeDto, RegisterDto, SessionDto } from './auth.dto.js';
+import { LoginDto, RegisterDto, SessionDto } from './auth.dto.js';
 import { EmptyBodyPipe } from './empty-body.pipe.js';
 
 export const REFRESH_COOKIE = 'hk_refresh';
@@ -195,26 +194,5 @@ export class AuthController {
   ): Promise<void> {
     await this.auth.logoutAll(principal.user.id);
     this.clear(res);
-  }
-}
-
-@ApiTags('Account')
-@ApiBearerAuth()
-@ApiResponse({
-  status: 401,
-  type: ErrorEnvelopeDto,
-  description: 'UNAUTHORIZED',
-})
-@Controller('me')
-@UseGuards(AccessGuard)
-export class MeController {
-  @Get()
-  @ApiOkResponse({ type: MeDto })
-  me(
-    @CurrentAccount() principal: Principal,
-    @Res({ passthrough: true }) res: Response,
-  ): MeDto {
-    res.setHeader('Cache-Control', 'no-store');
-    return { user: principal.user, character: null };
   }
 }

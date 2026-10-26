@@ -33,7 +33,7 @@ Testing: Vitest, integration tests and Playwright.
 
 Implement one roadmap phase at a time. Do not ask Codex to build the entire game in one run.
 
-Phase 0 provides the foundation. Phase 1 adds account authentication only.
+Phase 0 provides the foundation. Phase 1 adds account authentication. Phase 2 adds character identity and onboarding, without economy state.
 
 ## Developer setup
 
@@ -65,8 +65,8 @@ to the deployment environment; Phase 0 does not deploy infrastructure.
 
 ### Database workflow
 
-The Prisma schema contains only users and authentication sessions. The Phase 0
-no-table baseline is followed by the Phase 1 authentication migration. Generated
+The Prisma schema contains users, authentication sessions, characters and character
+stats. The Phase 2 character migration preserves existing users and sessions. Generated
 Prisma code is ignored and must be regenerated after installation/schema changes.
 
 `pnpm prisma:migrate` applies development migrations. When adding a schema change
@@ -90,7 +90,7 @@ pnpm format:check
 
 Integration tests require running PostgreSQL and Redis and the generated Prisma
 client. Unit tests mock external services. Playwright starts dedicated API/web servers
-on ports 3100/5174 and runs the real authentication journey with randomized identities.
+on ports 3100/5174 and runs real authentication and mobile character-onboarding journeys with randomized identities.
 Readiness-only browser smoke tests intercept their infrastructure requests.
 Authentication integration tests use Redis database 1; Playwright uses database 2.
 Reserve both for this project's tests. PostgreSQL fixtures use randomized identities;
@@ -158,4 +158,12 @@ Tests participate in the existing `pnpm test`, `pnpm test:integration` and
 trace artifacts. See [authentication design](docs/AUTHENTICATION.md) for session,
 revocation and deployment details.
 
-Phase 2 character creation and all gameplay remain intentionally unimplemented.
+Phase 2 character identity is implemented; economy and subsequent gameplay remain deferred.
+
+### Character creation
+
+Apply committed migrations with `pnpm prisma:deploy` and regenerate with
+`pnpm prisma:generate` when updating an existing checkout. Existing accounts
+enter `/create-character` after signing in. Public cosmetic options live in
+`packages/shared/src/character.ts`. See [character implementation notes](docs/CHARACTERS.md)
+for contracts, concurrency protection, database constraints and the Phase 3 boundary.

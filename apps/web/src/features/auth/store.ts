@@ -1,6 +1,11 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import type { AccountUser, AuthSessionResponse, MeResponse } from '@hk/shared';
+import type {
+  AccountUser,
+  AuthSessionResponse,
+  MeResponse,
+  CharacterResponse,
+} from '@hk/shared';
 import { api } from '../../api';
 import { ApiError } from '../../api/client';
 
@@ -14,6 +19,8 @@ export const useAuthStore = defineStore('auth', () => {
     'initializing',
   );
   const user = ref<AccountUser | null>(null);
+  // Current-account state has one owner, hydrated by /me and character mutations.
+  const character = ref<CharacterResponse | null>(null);
   const accessToken = ref<string | null>(null);
   const error = ref('');
   const busy = ref(false);
@@ -26,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clear(): void {
     accessToken.value = null;
     user.value = null;
+    character.value = null;
     status.value = 'unauthenticated';
   }
   function accept(session: AuthSessionResponse): void {
@@ -71,6 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
             retryAuthentication: false,
           });
           user.value = account.user;
+          character.value = account.character;
         }
       } catch {
         clear();
@@ -100,6 +109,11 @@ export const useAuthStore = defineStore('auth', () => {
         { ...cookieRequest, body: input },
       );
       accept(session);
+      const account = await api.request<MeResponse>('/api/v1/me', {
+        authenticated: true,
+      });
+      user.value = account.user;
+      character.value = account.character;
       initialized = true;
     } catch (cause) {
       clear();
@@ -164,6 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     status,
     user,
+    character,
     accessToken,
     authenticated,
     error,

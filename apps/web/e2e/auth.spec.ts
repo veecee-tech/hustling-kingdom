@@ -17,6 +17,13 @@ test('account registration, restoration, logout, login and logout all', async ({
   await page
     .getByRole('button', { name: 'Create account', exact: true })
     .click();
+  await expect(page).toHaveURL('/create-character');
+  await page
+    .getByLabel('Character name', { exact: true })
+    .fill('Adé of Kingdom');
+  await page
+    .getByRole('button', { name: 'Create character', exact: true })
+    .click();
   await expect(page).toHaveURL('/account');
   await expect(page.getByText(username, { exact: true })).toBeVisible();
   const cookie = (await context.cookies()).find(

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../pages/HomePage.vue';
 import AuthPage from '../features/auth/AuthPage.vue';
 import AccountPage from '../features/auth/AccountPage.vue';
+import CreateCharacterPage from '../features/character/CreateCharacterPage.vue';
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -23,6 +24,12 @@ export const router = createRouter({
       path: '/account',
       name: 'account',
       component: AccountPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
+    {
+      path: '/create-character',
+      name: 'create-character',
+      component: CreateCharacterPage,
       meta: { requiresAuth: true },
     },
   ],

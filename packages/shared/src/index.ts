@@ -1,3 +1,5 @@
+import type { CharacterResponse } from './character.js';
+export * from './character.js';
 export interface ApiErrorEnvelope {
   error: {
     code: string;
@@ -24,5 +26,5 @@ export interface AuthSessionResponse {
 }
 export interface MeResponse {
   user: AccountUser;
-  character: null;
+  character: CharacterResponse | null;
 }

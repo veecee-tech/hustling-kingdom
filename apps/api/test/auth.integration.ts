@@ -440,13 +440,15 @@ describe('request defenses', () => {
       configuration.values.authRateLimit = 1000;
     }
   });
-  it('introduces no character, wallet or gameplay tables', async () => {
+  it('keeps the database scoped to accounts and Phase 2 character identity', async () => {
     const rows = await db.client.$queryRaw<
       Array<{ tablename: string }>
     >`SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`;
     expect(rows.map((row) => row.tablename)).toEqual([
       '_prisma_migrations',
       'auth_sessions',
+      'character_stats',
+      'characters',
       'users',
     ]);
   });

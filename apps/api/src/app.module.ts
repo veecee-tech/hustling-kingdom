@@ -5,6 +5,7 @@ import { RedisModule } from './redis/redis.module.js';
 import { HealthModule } from './health/health.module.js';
 import { QueueModule } from './queue/queue.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
+import { CharactersModule } from './characters/characters.module.js';
 import { AuthModule } from './auth/auth.module.js';
 
 @Module({
@@ -16,6 +17,7 @@ import { AuthModule } from './auth/auth.module.js';
     RealtimeModule,
     HealthModule,
     AuthModule,
+    CharactersModule,
   ],
 })
 export class AppModule {}

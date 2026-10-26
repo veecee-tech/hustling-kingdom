@@ -2,7 +2,7 @@
 
 This implementation note supplements the approved specifications without changing
 their scope. Registration creates only an account and authenticated session.
-`GET /api/v1/me` returns `{ user, character: null }`.
+`GET /api/v1/me` returns `{ user, character }`, where character is null until creation.
 
 ## Credentials and identity
 
@@ -83,4 +83,12 @@ Vitest's Node test project uses SWC so decorator metadata matches production and
 real DTO validation is exercised. Integration tests cover SQL uniqueness races,
 rotation/replay races, rollback, revocation, rate limiting and safe serialization.
 Playwright starts dedicated local servers and tests registration, restoration,
-logout, login, protected routing and logout-all. No character/economy tables exist.
+logout, login, protected routing and logout-all. Character tables were added in Phase 2; economy remains deferred.
+
+## Phase 2 integration
+
+`/me` now returns a safe character object or `null`. The current-account Pinia
+store owns this object and hydrates it on sign-in and session restoration. Accounts
+without characters enter `/create-character`; `/account` requires a character.
+See [CHARACTERS.md](CHARACTERS.md) for the current contract. Registration itself
+continues to create only an account and session.

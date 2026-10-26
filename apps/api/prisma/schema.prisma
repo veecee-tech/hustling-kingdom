@@ -33,8 +33,53 @@ model User {
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   sessions        AuthSession[]
+  character       Character?
 
   @@map("users")
+}
+
+enum CharacterGender {
+  MALE
+  FEMALE
+  NON_BINARY
+}
+
+enum CharacterStatus {
+  ACTIVE
+}
+
+model Character {
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @unique @map("user_id") @db.Uuid
+  name             String          @db.VarChar(40)
+  slug             String          @unique @db.VarChar(40)
+  gender           CharacterGender
+  appearance       Json            @db.JsonB
+  status           CharacterStatus @default(ACTIVE)
+  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  creationKey      String          @map("creation_key") @db.VarChar(128)
+  creationHash     String          @map("creation_hash") @db.Char(64)
+  creationResponse Json?           @map("creation_response") @db.JsonB
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stats            CharacterStats?
+
+  @@map("characters")
+}
+
+model CharacterStats {
+  characterId     String    @id @map("character_id") @db.Uuid
+  reputation      BigInt    @default(0)
+  heat            Int       @default(0)
+  health          Int       @default(100)
+  energy          Int       @default(100)
+  stress          Int       @default(10)
+  highestNetWorth BigInt    @default(0) @map("highest_net_worth")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  character       Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@map("character_stats")
 }
 
 // Each rotated credential has its own row. Spent digests remain until expiry

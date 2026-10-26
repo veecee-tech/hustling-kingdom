@@ -71,7 +71,7 @@ export function setupApplication(app: INestApplication): void {
     new DocumentBuilder()
       .setTitle('Hustling Kingdom API')
       .setDescription(
-        'Account authentication and infrastructure. No gameplay API yet.',
+        'Account authentication, character identity and infrastructure. Economy deferred.',
       )
       .addBearerAuth()
       .addCookieAuth('hk_refresh')

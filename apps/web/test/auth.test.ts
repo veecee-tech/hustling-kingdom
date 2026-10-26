@@ -30,6 +30,7 @@ describe('account session state', () => {
     const request = vi
       .spyOn(api, 'request')
       .mockResolvedValueOnce(session)
+      .mockResolvedValueOnce({ user: session.user, character: null })
       .mockResolvedValueOnce({ ...session, accessToken: 'renewed-fixture' })
       .mockResolvedValueOnce(undefined);
     const auth = useAuthStore();
@@ -40,10 +41,11 @@ describe('account session state', () => {
     await auth.logout(true);
     expect(request.mock.calls.map((call) => call[0])).toEqual([
       '/api/v1/auth/login',
+      '/api/v1/me',
       '/api/v1/auth/refresh',
       '/api/v1/auth/logout-all',
     ]);
-    expect(request.mock.calls[2]?.[1]?.authorization).toBe(
+    expect(request.mock.calls[3]?.[1]?.authorization).toBe(
       'Bearer renewed-fixture',
     );
     expect(auth.authenticated).toBe(false);
@@ -115,6 +117,7 @@ describe('account session state', () => {
     const request = vi
       .spyOn(api, 'request')
       .mockResolvedValueOnce(session)
+      .mockResolvedValueOnce({ user: session.user, character: null })
       .mockResolvedValueOnce(undefined);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     const auth = useAuthStore();
@@ -123,7 +126,7 @@ describe('account session state', () => {
       password: 'fixture passphrase',
     });
     await auth.logout();
-    expect(request.mock.calls[1]?.[0]).toBe('/api/v1/auth/logout');
+    expect(request.mock.calls[2]?.[0]).toBe('/api/v1/auth/logout');
     expect(auth.user).toBeNull();
     expect(auth.accessToken).toBeNull();
     expect(auth.authenticated).toBe(false);
@@ -132,6 +135,7 @@ describe('account session state', () => {
   it('clears stale local state when logout cannot reach the server and informs the user', async () => {
     vi.spyOn(api, 'request')
       .mockResolvedValueOnce(session)
+      .mockResolvedValueOnce({ user: session.user, character: null })
       .mockRejectedValueOnce(new ApiError(0, 'NETWORK_ERROR', 'Unavailable.'));
     const auth = useAuthStore();
     await auth.signIn('login', {
@@ -152,6 +156,12 @@ describe('protected navigation', () => {
       routes: [
         { path: '/', component: Page },
         {
+          path: '/create-character',
+          name: 'create-character',
+          component: Page,
+          meta: { requiresAuth: true },
+        },
+        {
           path: '/login',
           name: 'login',
           component: Page,
@@ -167,7 +177,7 @@ describe('protected navigation', () => {
           path: '/account',
           name: 'account',
           component: Page,
-          meta: { requiresAuth: true },
+          meta: { requiresAuth: true, requiresCharacter: true },
         },
       ],
     });
@@ -190,7 +200,7 @@ describe('protected navigation', () => {
     const navigation = router();
     installAuthGuard(navigation, auth);
     await navigation.push('/login');
-    expect(navigation.currentRoute.value.name).toBe('account');
+    expect(navigation.currentRoute.value.name).toBe('create-character');
   });
 });
 
