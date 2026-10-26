@@ -12,9 +12,9 @@ export function installAuthGuard(
       if (to.meta.requiresCharacter && !auth.character)
         return { name: 'create-character' };
       if (to.name === 'create-character' && auth.character)
-        return { name: 'account' };
+        return { name: 'home' };
       if (to.meta.guestOnly)
-        return { name: auth.character ? 'account' : 'create-character' };
+        return { name: auth.character ? 'home' : 'create-character' };
     }
     return true;
   });

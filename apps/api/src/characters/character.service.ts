@@ -6,6 +6,7 @@ import {
   type CharacterResponse,
 } from '@hk/shared';
 import { DatabaseService } from '../database/database.module.js';
+import { EconomyService } from '../economy/economy.service.js';
 import { PublicHttpError } from '../common/error.filter.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { CreateCharacterDto } from './character.dto.js';
@@ -17,7 +18,10 @@ import {
 
 @Injectable()
 export class CharacterService {
-  constructor(@Inject(DatabaseService) private readonly db: DatabaseService) {}
+  constructor(
+    @Inject(DatabaseService) private readonly db: DatabaseService,
+    @Inject(EconomyService) private readonly economy: EconomyService,
+  ) {}
 
   async find(userId: string): Promise<CharacterResponse | null> {
     const row = await this.db.client.character.findUnique({
@@ -114,6 +118,7 @@ export class CharacterService {
         include: { stats: true },
       });
       const response = characterResponse(row);
+      await this.economy.initializeInTransaction(tx, userId, row.id);
       await tx.character.update({
         where: { id: row.id },
         data: {

@@ -10,14 +10,20 @@ it('boots Vue, router and Pinia and displays API readiness', async () => {
   vi.spyOn(api, 'ready').mockResolvedValue({ status: 'ok' });
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: [{ path: '/', component: HomePage }],
+    routes: [
+      { path: '/', name: 'home', component: HomePage },
+      { path: '/login', component: HomePage },
+      { path: '/register', component: HomePage },
+    ],
   });
   await router.push('/');
   await router.isReady();
   const wrapper = mount(App, { global: { plugins: [createPinia(), router] } });
   await flushPromises();
-  expect(wrapper.get('h1').text()).toBe('Hustling Kingdom');
-  expect(wrapper.get('[role="status"]').text()).toContain('are ready');
+  expect(wrapper.get('h1').text()).toContain('Your life.');
+  expect(wrapper.get('.system-details [role="status"]').text()).toContain(
+    'are ready',
+  );
   wrapper.unmount();
   vi.restoreAllMocks();
 });

@@ -80,7 +80,7 @@ beforeAll(async () => {
 afterAll(async () => {
   if (db)
     await db.client.user.deleteMany({
-      where: { username: { startsWith: prefix } },
+      where: { username: { startsWith: prefix }, character: { is: null } },
     });
   await app?.close();
 });

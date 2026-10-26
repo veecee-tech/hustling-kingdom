@@ -17,7 +17,9 @@
     "format:check": "prettier --check .",
     "prisma:generate": "pnpm --filter @hk/api prisma:generate",
     "prisma:migrate": "pnpm --filter @hk/api prisma:migrate",
-    "prisma:deploy": "pnpm --filter @hk/api prisma:deploy"
+    "prisma:deploy": "pnpm --filter @hk/api prisma:deploy",
+    "economy:backfill": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/economy/maintenance.js --backfill",
+    "economy:reconcile": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/economy/maintenance.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

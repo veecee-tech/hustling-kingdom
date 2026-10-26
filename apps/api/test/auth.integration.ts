@@ -449,7 +449,10 @@ describe('request defenses', () => {
       'auth_sessions',
       'character_stats',
       'characters',
+      'idempotency_records',
       'users',
+      'wallet_transactions',
+      'wallets',
     ]);
   });
 });

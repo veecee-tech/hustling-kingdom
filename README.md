@@ -33,7 +33,7 @@ Testing: Vitest, integration tests and Playwright.
 
 Implement one roadmap phase at a time. Do not ask Codex to build the entire game in one run.
 
-Phase 0 provides the foundation. Phase 1 adds account authentication. Phase 2 adds character identity and onboarding, without economy state.
+Phase 0 provides the foundation. Phase 1 adds account authentication. Phase 2 adds character identity. Phase 3 adds the authoritative wallet/ledger and game UI foundation.
 
 ## Developer setup
 
@@ -57,7 +57,7 @@ pnpm dev
 ```
 
 Open the web app at <http://127.0.0.1:5173>. The API listens on port 3000.
-The home page checks required service readiness and offers retry when unavailable.
+Home is the Family House world viewport with the player avatar and compact HUD. Phone, Bank and Me open as contextual panels; connection status remains in a small disclosure.
 The web app uses only the public `VITE_API_BASE_URL`; server environment variables
 are never imported into the frontend. Vite reads the root environment file.
 Deployed public API URLs and web origins must use HTTPS. TLS termination belongs
@@ -65,8 +65,8 @@ to the deployment environment; Phase 0 does not deploy infrastructure.
 
 ### Database workflow
 
-The Prisma schema contains users, authentication sessions, characters and character
-stats. The Phase 2 character migration preserves existing users and sessions. Generated
+The Prisma schema contains users, sessions, characters/stats, wallets, immutable
+ledger entries and durable economic retry receipts. The Phase 2 character migration preserves existing users and sessions. Generated
 Prisma code is ignored and must be regenerated after installation/schema changes.
 
 `pnpm prisma:migrate` applies development migrations. When adding a schema change
@@ -94,7 +94,7 @@ on ports 3100/5174 and runs real authentication and mobile character-onboarding 
 Readiness-only browser smoke tests intercept their infrastructure requests.
 Authentication integration tests use Redis database 1; Playwright uses database 2.
 Reserve both for this project's tests. PostgreSQL fixtures use randomized identities;
-integration fixtures are removed after tests, while browser fixtures remain as test accounts.
+unfunded integration fixtures are removed, while funded integration/browser fixtures retain their immutable accounting history.
 CI runs these same suites with PostgreSQL and Redis service containers.
 
 `pnpm format` formats implementation files without rewriting the source-of-truth
@@ -158,12 +158,34 @@ Tests participate in the existing `pnpm test`, `pnpm test:integration` and
 trace artifacts. See [authentication design](docs/AUTHENTICATION.md) for session,
 revocation and deployment details.
 
-Phase 2 character identity is implemented; economy and subsequent gameplay remain deferred.
+Phase 3 wallet/ledger and game UI are implemented. Jobs and subsequent gameplay remain deferred.
 
 ### Character creation
 
 Apply committed migrations with `pnpm prisma:deploy` and regenerate with
 `pnpm prisma:generate` when updating an existing checkout. Existing accounts
-enter `/create-character` after signing in. Public cosmetic options live in
+without a character enter `/create-character` after signing in; returning players enter Home. Public cosmetic options live in
 `packages/shared/src/character.ts`. See [character implementation notes](docs/CHARACTERS.md)
 for contracts, concurrency protection, database constraints and the Phase 3 boundary.
+
+### Economy initialization and verification
+
+After applying migrations and generating Prisma, initialize existing Phase 2
+characters before reopening player traffic:
+
+```sh
+pnpm economy:backfill
+pnpm economy:reconcile
+```
+
+Backfill is rerunnable and funds each character exactly once. New character creation
+funds the wallet atomically. Reconciliation reports counts/mismatches without private
+player data and never silently repairs balances. Funded test history must not be
+removed by disabling protections. No public credit/debit or real-money payout exists.
+
+See [economy implementation](docs/ECONOMY-IMPLEMENTATION.md) and
+[world-first UI guide](docs/UI-UX.md). Phase 3.1 establishes the Family House world,
+compact HUD and route-driven panels. `/phone` opens the device launcher; its Bank app
+(`/wallet`) provides fictional cash/bank moves and paginated history. `/account` opens
+Me; `/city` and `/hustle` open locked previews. Home stays within the viewport.
+No Phase 4 jobs, travel, stat recovery or Phaser gameplay are implemented.

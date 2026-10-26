@@ -36,7 +36,7 @@ async function submit(): Promise<void> {
     attempt = { payload, key: crypto.randomUUID() };
   try {
     auth.character = await characterApi.create(body, attempt.key);
-    await router.replace({ name: 'account' });
+    await router.replace({ name: 'home' });
   } catch (cause) {
     if (
       cause instanceof ApiError &&
@@ -44,7 +44,7 @@ async function submit(): Promise<void> {
     ) {
       try {
         auth.character = await characterApi.own();
-        await router.replace({ name: 'account' });
+        await router.replace({ name: 'home' });
         return;
       } catch {
         /* Show the retry message below when recovery cannot reach the API. */
@@ -73,14 +73,19 @@ async function signOut(): Promise<void> {
 }
 </script>
 <template>
-  <section class="mx-auto max-w-xl" aria-labelledby="create-character-title">
+  <section class="creation-stage" aria-labelledby="create-character-title">
+    <p class="eyebrow">Chapter 02 / Make it you</p>
     <h1 id="create-character-title" class="text-3xl font-bold">
       Create your character
     </h1>
     <p class="mt-2 text-slate-300">
       Choose your name and style. Your story begins at Family House.
     </p>
-    <form class="mt-6 space-y-5" @submit.prevent="submit">
+    <div class="creation-look">
+      <CharacterPreview :appearance="input.appearance" />
+      <p>FAMILY HOUSE · OLD TOWN</p>
+    </div>
+    <form class="creation-controls mt-6 space-y-5" @submit.prevent="submit">
       <fieldset :disabled="busy" class="space-y-4">
         <label class="block"
           >Character name
@@ -114,7 +119,6 @@ async function signOut(): Promise<void> {
           </select>
         </label>
       </fieldset>
-      <CharacterPreview :appearance="input.appearance" />
       <AppearancePicker v-model="input.appearance" :disabled="busy" />
       <p v-if="error" role="alert" class="text-rose-300">{{ error }}</p>
       <button class="auth-button w-full" :disabled="busy || !valid">

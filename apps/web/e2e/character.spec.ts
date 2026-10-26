@@ -23,30 +23,35 @@ test('mobile onboarding, cosmetic changes, restoration and existing-character ro
   ).toBeDisabled();
   await page.getByLabel('Character name', { exact: true }).fill('Nneka Ọlá');
   await page.getByLabel('Gender presentation').selectOption('FEMALE');
-  await page.getByLabel('Hair', { exact: true }).selectOption('braids');
-  await page.getByLabel('Top', { exact: true }).selectOption('ankara');
+  await page.getByRole('radio', { name: 'Hair: braids', exact: true }).check();
+  await page.getByRole('radio', { name: 'Top: ankara', exact: true }).check();
   await expect(
     page.getByRole('img', { name: 'Character appearance preview' }),
   ).toBeVisible();
   await page
     .getByRole('button', { name: 'Create character', exact: true })
     .click();
-  await expect(page).toHaveURL('/account');
+  await expect(page).toHaveURL('/');
+  await page.goto('/account');
   await expect(page.getByRole('heading', { name: 'Nneka Ọlá' })).toBeVisible();
-  await expect(page.getByText('Family House', { exact: false })).toBeVisible();
+  await expect(
+    page.getByRole('dialog', { name: 'Me', exact: true }),
+  ).toContainText('Family House');
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.getByLabel('Hair', { exact: true }).selectOption('afro');
+  await page.getByRole('radio', { name: 'Hair: afro', exact: true }).check();
   await page.getByRole('button', { name: 'Save appearance' }).click();
   await expect(page.getByRole('status')).toHaveText('Appearance saved.');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Nneka Ọlá' })).toBeVisible();
-  await expect(page.getByLabel('Hair', { exact: true })).toHaveValue('afro');
+  await expect(
+    page.getByRole('radio', { name: 'Hair: afro', exact: true }),
+  ).toBeChecked();
   for (const path of ['/create-character', '/login', '/register']) {
     await page.goto(path);
-    await expect(page).toHaveURL('/account');
+    await expect(page).toHaveURL('/');
   }
 });

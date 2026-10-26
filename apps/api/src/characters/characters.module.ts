@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
+import { EconomyModule } from '../economy/economy.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { MeController } from '../account/me.controller.js';
 import { CharacterController } from './character.controller.js';
 import { CharacterService } from './character.service.js';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, EconomyModule],
   controllers: [CharacterController, MeController],
   providers: [CharacterService],
 })

@@ -80,11 +80,11 @@ describe('three-state character navigation', () => {
       );
       await navigation.push('/register');
       expect(navigation.currentRoute.value.name).toBe(
-        current ? 'account' : 'create-character',
+        current ? 'home' : 'create-character',
       );
       if (current) {
         await navigation.push('/create-character');
-        expect(navigation.currentRoute.value.name).toBe('account');
+        expect(navigation.currentRoute.value.name).toBe('home');
       }
     },
   );
@@ -113,7 +113,7 @@ describe('three-state character navigation', () => {
     expect(create).toHaveBeenCalledTimes(2);
     expect(create.mock.calls[0]?.[1]).toBe(create.mock.calls[1]?.[1]);
     expect(auth.character).toEqual(character);
-    expect(navigation.currentRoute.value.name).toBe('account');
+    expect(navigation.currentRoute.value.name).toBe('home');
     wrapper.unmount();
   });
 });

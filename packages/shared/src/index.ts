@@ -1,5 +1,6 @@
 import type { CharacterResponse } from './character.js';
 export * from './character.js';
+export * from './wallet.js';
 export interface ApiErrorEnvelope {
   error: {
     code: string;

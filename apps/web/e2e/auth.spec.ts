@@ -24,7 +24,8 @@ test('account registration, restoration, logout, login and logout all', async ({
   await page
     .getByRole('button', { name: 'Create character', exact: true })
     .click();
-  await expect(page).toHaveURL('/account');
+  await expect(page).toHaveURL('/');
+  await page.goto('/account');
   await expect(page.getByText(username, { exact: true })).toBeVisible();
   const cookie = (await context.cookies()).find(
     (item) => item.name === 'hk_refresh',
@@ -47,7 +48,8 @@ test('account registration, restoration, logout, login and logout all', async ({
   );
   expect(rotated?.value === cookie?.value).toBe(false);
   await page.goto('/login');
-  await expect(page).toHaveURL('/account');
+  await expect(page).toHaveURL('/');
+  await page.goto('/account');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page).toHaveURL('/login');
   await page.getByLabel('Email or username').fill(username);
@@ -58,7 +60,8 @@ test('account registration, restoration, logout, login and logout all', async ({
   );
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL('/account');
+  await expect(page).toHaveURL('/');
+  await page.goto('/account');
   await page.getByRole('button', { name: 'Sign out all devices' }).click();
   await expect(page).toHaveURL('/login');
   await page.goto('/account');

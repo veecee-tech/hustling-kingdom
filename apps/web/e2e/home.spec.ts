@@ -25,14 +25,21 @@ test('home boots with router, store, API client and Tailwind', async ({
   );
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { name: 'Hustling Kingdom', exact: true }),
+    page.getByRole('heading', {
+      name: /Your life\.\s*Your own way\./,
+      exact: false,
+    }),
   ).toBeVisible();
+  await page.getByText('Connection status', { exact: true }).click();
   await expect(page.getByRole('status')).toHaveText(
     'API and required services are ready.',
   );
-  await expect(page.locator('header')).toHaveCSS('border-bottom-width', '1px');
-  await page.getByRole('link', { name: 'Hustling Kingdom' }).click();
-  await expect(page).toHaveURL('/');
+  await expect(
+    page.getByRole('link', { name: 'Start your story' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Family House courtyard' }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Check again' }).click();
   await expect(page.getByRole('status')).toContainText('are ready');
 });
@@ -52,6 +59,7 @@ test('unavailable API displays a recoverable error', async ({ page }) => {
     }),
   );
   await page.goto('/');
+  await page.getByText('Connection status', { exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('Service unavailable.');
   await expect(page.getByRole('button', { name: 'Check again' })).toBeEnabled();
 });

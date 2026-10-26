@@ -22,18 +22,19 @@ enum UserStatus {
 }
 
 model User {
-  id              String        @id @default(uuid()) @db.Uuid
-  email           String        @unique @db.VarChar(254)
-  username        String        @unique @db.VarChar(24)
-  passwordHash    String        @map("password_hash")
-  role            UserRole      @default(PLAYER)
-  status          UserStatus    @default(ACTIVE)
-  emailVerifiedAt DateTime?     @map("email_verified_at") @db.Timestamptz
-  lastLoginAt     DateTime?     @map("last_login_at") @db.Timestamptz
-  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz
-  sessions        AuthSession[]
-  character       Character?
+  id                 String              @id @default(uuid()) @db.Uuid
+  email              String              @unique @db.VarChar(254)
+  username           String              @unique @db.VarChar(24)
+  passwordHash       String              @map("password_hash")
+  role               UserRole            @default(PLAYER)
+  status             UserStatus          @default(ACTIVE)
+  emailVerifiedAt    DateTime?           @map("email_verified_at") @db.Timestamptz
+  lastLoginAt        DateTime?           @map("last_login_at") @db.Timestamptz
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  sessions           AuthSession[]
+  character          Character?
+  idempotencyRecords IdempotencyRecord[]
 
   @@map("users")
 }
@@ -49,20 +50,22 @@ enum CharacterStatus {
 }
 
 model Character {
-  id               String          @id @default(uuid()) @db.Uuid
-  userId           String          @unique @map("user_id") @db.Uuid
-  name             String          @db.VarChar(40)
-  slug             String          @unique @db.VarChar(40)
+  id               String              @id @default(uuid()) @db.Uuid
+  userId           String              @unique @map("user_id") @db.Uuid
+  name             String              @db.VarChar(40)
+  slug             String              @unique @db.VarChar(40)
   gender           CharacterGender
-  appearance       Json            @db.JsonB
-  status           CharacterStatus @default(ACTIVE)
-  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz
-  creationKey      String          @map("creation_key") @db.VarChar(128)
-  creationHash     String          @map("creation_hash") @db.Char(64)
-  creationResponse Json?           @map("creation_response") @db.JsonB
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appearance       Json                @db.JsonB
+  status           CharacterStatus     @default(ACTIVE)
+  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  creationKey      String              @map("creation_key") @db.VarChar(128)
+  creationHash     String              @map("creation_hash") @db.Char(64)
+  creationResponse Json?               @map("creation_response") @db.JsonB
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   stats            CharacterStats?
+  wallet           Wallet?
+  transactions     WalletTransaction[]
 
   @@map("characters")
 }
@@ -99,4 +102,88 @@ model AuthSession {
   @@index([familyId, revokedAt])
   @@index([expiresAt])
   @@map("auth_sessions")
+}
+
+enum WalletAccount {
+  CASH
+  BANK
+}
+
+enum TransactionDirection {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTransactionType {
+  STARTING_CASH
+  STARTING_BANK
+  CASH_DEPOSIT
+  CASH_WITHDRAWAL
+  SYSTEM_CREDIT
+  SYSTEM_DEBIT
+}
+
+enum IdempotencyStatus {
+  COMPLETED
+}
+
+model Wallet {
+  id           String              @id @default(uuid()) @db.Uuid
+  characterId  String              @unique @map("character_id") @db.Uuid
+  cashBalance  BigInt              @default(0) @map("cash_balance")
+  bankBalance  BigInt              @default(0) @map("bank_balance")
+  version      BigInt              @default(0)
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  character    Character           @relation(fields: [characterId], references: [id], onDelete: Restrict)
+  transactions WalletTransaction[]
+
+  @@unique([id, characterId])
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id              String                @id @default(uuid()) @db.Uuid
+  walletId        String                @map("wallet_id") @db.Uuid
+  characterId     String                @map("character_id") @db.Uuid
+  account         WalletAccount
+  transactionType WalletTransactionType @map("transaction_type")
+  direction       TransactionDirection
+  amount          BigInt
+  balanceBefore   BigInt                @map("balance_before")
+  balanceAfter    BigInt                @map("balance_after")
+  sequence        BigInt                @default(0)
+  referenceType   String?               @map("reference_type") @db.VarChar(64)
+  referenceId     String?               @map("reference_id") @db.Uuid
+  idempotencyKey  String?               @map("idempotency_key") @db.VarChar(128)
+  correlationId   String?               @map("correlation_id") @db.VarChar(80)
+  metadata        Json?                 @db.JsonB
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  wallet          Wallet                @relation(fields: [walletId, characterId], references: [id, characterId], onDelete: Restrict)
+  character       Character             @relation(fields: [characterId], references: [id], onDelete: Restrict)
+
+  @@unique([walletId, sequence])
+  @@index([walletId, account, sequence(sort: Desc)])
+  @@index([characterId, createdAt(sort: Desc)])
+  @@map("wallet_transactions")
+}
+
+model IdempotencyRecord {
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String            @map("user_id") @db.Uuid
+  key            String            @db.VarChar(128)
+  operation      String            @db.VarChar(80)
+  requestHash    String            @map("request_hash") @db.Char(64)
+  status         IdempotencyStatus @default(COMPLETED)
+  responseStatus Int               @map("response_status")
+  responseBody   Json              @map("response_body") @db.JsonB
+  resourceType   String?           @map("resource_type") @db.VarChar(64)
+  resourceId     String?           @map("resource_id") @db.Uuid
+  expiresAt      DateTime?         @map("expires_at") @db.Timestamptz
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  user           User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, operation, key])
+  @@map("idempotency_records")
 }

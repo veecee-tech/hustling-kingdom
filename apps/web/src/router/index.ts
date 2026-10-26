@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import PhonePage from '../pages/PhonePage.vue';
+import LockedPage from '../pages/LockedPage.vue';
+import WalletPage from '../features/wallet/WalletPage.vue';
 import HomePage from '../pages/HomePage.vue';
 import AuthPage from '../features/auth/AuthPage.vue';
 import AccountPage from '../features/auth/AccountPage.vue';
@@ -7,6 +10,30 @@ import CreateCharacterPage from '../features/character/CreateCharacterPage.vue';
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/phone',
+      name: 'phone',
+      component: PhonePage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
+    {
+      path: '/city',
+      name: 'city',
+      component: LockedPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
+    {
+      path: '/hustle',
+      name: 'hustle',
+      component: LockedPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
+    {
+      path: '/wallet',
+      name: 'wallet',
+      component: WalletPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
     { path: '/', name: 'home', component: HomePage },
     {
       path: '/login',

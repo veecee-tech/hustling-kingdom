@@ -45,31 +45,37 @@ async function signOut(all: boolean): Promise<void> {
 }
 </script>
 <template>
-  <section aria-labelledby="account-title" class="max-w-lg">
-    <h1 id="account-title" class="text-3xl font-bold">Your account</h1>
-    <p class="mt-4 text-slate-300">
-      Signed in as <strong>{{ auth.user?.username }}</strong>
-    </p>
-    <p class="mt-2 break-all text-slate-400">{{ auth.user?.email }}</p>
+  <section aria-labelledby="character-title" class="profile-stage">
+    <p class="eyebrow">Me / Your identity</p>
     <section
       v-if="auth.character"
       class="mt-6 space-y-5"
       aria-labelledby="character-title"
     >
-      <h2 id="character-title" class="text-2xl font-semibold">
+      <h1 id="character-title" class="text-2xl font-semibold">
         {{ auth.character.name }}
-      </h2>
+      </h1>
       <p class="text-slate-300">
         {{ auth.character.residence }} ·
         {{ auth.character.gender.replaceAll('_', ' ').toLowerCase() }}
       </p>
-      <dl class="grid grid-cols-2 gap-3 rounded-xl bg-slate-900 p-4">
-        <div v-for="(value, stat) in auth.character.stats" :key="stat">
-          <dt class="capitalize text-slate-400">{{ stat }}</dt>
-          <dd class="text-xl font-semibold">{{ value }}</dd>
-        </div>
-      </dl>
       <CharacterPreview :appearance="appearance" />
+      <div class="life-meters">
+        <label
+          v-for="stat in ['health', 'energy', 'stress'] as const"
+          :key="stat"
+          >{{ stat }} <strong>{{ auth.character.stats[stat] }}/100</strong
+          ><meter
+            :value="auth.character.stats[stat]"
+            min="0"
+            max="100"
+            :aria-label="stat"
+        /></label>
+      </div>
+      <p class="life-standing">
+        Reputation {{ auth.character.stats.reputation }} · Heat
+        {{ auth.character.stats.heat }}
+      </p>
       <form class="space-y-4" @submit.prevent="saveAppearance">
         <AppearancePicker v-model="appearance" :disabled="saving" />
         <p v-if="message" :role="failed ? 'alert' : 'status'">{{ message }}</p>
@@ -78,17 +84,29 @@ async function signOut(all: boolean): Promise<void> {
         </button>
       </form>
     </section>
-    <div class="mt-8 flex flex-wrap gap-4">
-      <button class="auth-button" :disabled="auth.busy" @click="signOut(false)">
-        Sign out
-      </button>
-      <button
-        class="rounded-lg border border-slate-500 px-4 py-2 disabled:opacity-50"
-        :disabled="auth.busy"
-        @click="signOut(true)"
-      >
-        Sign out all devices
-      </button>
-    </div>
+    <section class="account-security" aria-labelledby="account-title">
+      <p class="eyebrow">Account & security</p>
+      <h2 id="account-title">Your account</h2>
+      <p class="muted">
+        Signed in as <strong>{{ auth.user?.username }}</strong>
+      </p>
+      <p class="muted break-all">{{ auth.user?.email }}</p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <button
+          class="auth-button"
+          :disabled="auth.busy"
+          @click="signOut(false)"
+        >
+          Sign out
+        </button>
+        <button
+          class="rounded-lg border border-slate-500 px-4 py-2 disabled:opacity-50"
+          :disabled="auth.busy"
+          @click="signOut(true)"
+        >
+          Sign out all devices
+        </button>
+      </div>
+    </section>
   </section>
 </template>

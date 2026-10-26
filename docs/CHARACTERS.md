@@ -92,14 +92,14 @@ The existing current-account Pinia store owns user, access token and current
 character exactly once. Sign-in and session restoration hydrate it through `/me`.
 Guest protected navigation goes to login; accounts without a character go to
 `/create-character` when entering `/account` or guest routes. Existing characters
-go to `/account` from login, register and creation. The public infrastructure home
-remains accessible. Creation success updates memory and navigates without reload.
+go to Home (`/`) from login, register and creation. The public Home
+remains accessible with an entry overlay for guests. Creation success updates memory and navigates without reload.
 
 The single short onboarding form supplies immediate name validation, defaults from
-the catalog, a preview, busy/error states and a disabled submit button. An unchanged
+the catalog, a prominent avatar, visual radio choices, busy/error states and a disabled submit button. An unchanged
 payload keeps its in-memory key across network retries; changed intent gets a new
 key. After a reload, session restoration discovers an already committed character.
-`/account` displays stats and edits cosmetics only; it is not a gameplay dashboard.
+`/account` opens Me over the world, with avatar, life meters and cosmetic editing.
 
 ## Verification and phase boundary
 
@@ -118,3 +118,12 @@ characters in the separately reviewed Phase 3. Approved specifications are prese
 
 No wallet, cash/bank balance, ledger, starting currency, economy service, jobs,
 hustles, stat progression, Phaser city or presence is implemented here.
+
+## Phase 3 integration
+
+The Phase 2 funding deferral is now resolved by EconomyModule. New creation calls
+EconomyService inside the same transaction as identity/stats; existing characters
+use the explicit rerunnable backfill. Character endpoints and original creation
+receipts keep their public response shape. Economy history now prevents deletion
+of funded fixtures; the Phase 2 cleanup description above is historical. See
+[ECONOMY-IMPLEMENTATION.md](ECONOMY-IMPLEMENTATION.md) and [UI-UX.md](UI-UX.md).
