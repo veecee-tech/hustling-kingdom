@@ -243,6 +243,47 @@ export class EconomyService {
   ): Promise<WalletSummary> {
     return summary(await this.wallet(tx, userId));
   }
+  // Caller owns the transaction/User lock. The durable attempt defines both sides.
+  async settleHustleInTransaction(
+    tx: Prisma.TransactionClient,
+    actor: EconomyActor,
+    attemptId: string,
+    key: string,
+  ): Promise<WalletSummary> {
+    const wallet = await this.wallet(tx, actor.userId);
+    const attempt = await tx.hustleAttempt.findFirst({
+      where: { id: attemptId, characterId: wallet.characterId },
+    });
+    if (!attempt) throw new Error('Invalid hustle money intent.');
+    const correlation =
+      requestContext.getStore()?.requestId ?? `hustle_${randomUUID()}`;
+    const reference = { type: 'hustle_attempt', id: attempt.id };
+    if (attempt.lossAmount > 0n)
+      await this.append(
+        tx,
+        wallet.id,
+        'BANK',
+        attempt.lossAmount,
+        'DEBIT',
+        'HUSTLE_LOSS',
+        requireKey(key),
+        correlation,
+        reference,
+      );
+    if (attempt.rewardAmount > 0n)
+      await this.append(
+        tx,
+        wallet.id,
+        'BANK',
+        attempt.rewardAmount,
+        'CREDIT',
+        'HUSTLE_REWARD',
+        requireKey(key),
+        correlation,
+        reference,
+      );
+    return this.getWalletInTransaction(tx, actor.userId);
+  }
   private async mutate(
     actor: EconomyActor,
     keyValue: string,

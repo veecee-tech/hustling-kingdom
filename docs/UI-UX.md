@@ -118,8 +118,8 @@ Screenshots cover Home, Phone, Bank, Me and character creation. Existing authent
 character and economy tests remain regression gates. Screenshots are review artifacts,
 not committed assets.
 
-Jobs are implemented in Phase 4. Skills, underground hustles, travel, production
-stat recovery, game clock, social apps and Phaser remain unimplemented.
+Jobs, Skills and abstract underground hustles are implemented through Phase 6.
+Travel, production stat recovery, game clock, social apps and Phaser remain unimplemented.
 Future Phaser integration must sit behind the approved GameBridge rather than owning
 Vue’s HUD, phone, panels or authoritative state.
 
@@ -143,3 +143,19 @@ historical, so the frontend reloads current `/dashboard`, catalog and wallet/his
 rather than overwriting current stats with an old retry receipt. Identity epochs
 and read generations discard stale responses. Window focus refreshes work state;
 there is no realtime sync platform. Browser timers display progress only.
+
+## Phase 6 underground experience
+
+Hustle offers Work and Underground. Underground opens a contextual opportunity list
+with tier, risk and server-calculated availability. Detail explains entry cost,
+reward range, maximum total loss, Bank reserve, Energy and Street requirement.
+A labelled confirmation section requires an explicit “Do it” action. The durable
+result announces one of five outcomes, net money and its breakdown, Energy spent,
+Street XP, level-up and genuine unlocks. History restores saved results on reload.
+Bank labels the actual reward/loss ledger entries. Me shows Street sources and
+next opportunities. Current balances/stats/skills reload after mutations rather
+than being replaced by historical receipts. Identity changes clear private state.
+
+The world, avatar, HUD and navigation remain visible behind responsive panels.
+Reduced motion, keyboard focus and labelled controls remain supported. No permanent
+skill roster is added to the HUD. Existing artwork remains explicitly ALPHA.

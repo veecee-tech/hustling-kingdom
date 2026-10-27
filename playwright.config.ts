@@ -3,6 +3,7 @@ import './infrastructure/scripts/windows-path.mjs';
 
 export default defineConfig({
   testDir: './apps/web/e2e',
+  globalSetup: './infrastructure/scripts/playwright-hustles.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

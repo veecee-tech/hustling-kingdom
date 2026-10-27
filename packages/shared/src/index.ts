@@ -31,3 +31,4 @@ export interface MeResponse {
 }
 export * from './jobs.js';
 export * from './skills.js';
+export * from './hustles.js';

@@ -55,6 +55,8 @@ export class WalletEntryDto implements WalletEntry {
       'SYSTEM_CREDIT',
       'SYSTEM_DEBIT',
       'JOB_SALARY',
+      'HUSTLE_REWARD',
+      'HUSTLE_LOSS',
     ],
   })
   transactionType!: WalletTransactionType;

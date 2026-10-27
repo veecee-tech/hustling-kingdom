@@ -1,4 +1,5 @@
 import { JobsModule } from './jobs/jobs.module.js';
+import { HustlesModule } from './hustles/hustles.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
@@ -20,6 +21,7 @@ import { AuthModule } from './auth/auth.module.js';
     AuthModule,
     CharactersModule,
     JobsModule,
+    HustlesModule,
   ],
 })
 export class AppModule {}

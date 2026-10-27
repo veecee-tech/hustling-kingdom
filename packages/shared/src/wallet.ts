@@ -12,7 +12,9 @@ export type WalletTransactionType =
   | 'CASH_WITHDRAWAL'
   | 'SYSTEM_CREDIT'
   | 'SYSTEM_DEBIT'
-  | 'JOB_SALARY';
+  | 'JOB_SALARY'
+  | 'HUSTLE_REWARD'
+  | 'HUSTLE_LOSS';
 export interface WalletEntry {
   id: string;
   account: WalletAccount;

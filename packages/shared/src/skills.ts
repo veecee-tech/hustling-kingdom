@@ -23,7 +23,7 @@ export interface SkillProgress {
   capped: boolean;
 }
 export interface SkillUnlock {
-  type: 'JOB';
+  type: 'JOB' | 'HUSTLE';
   id: string;
   name: string;
   requiredLevel: number;

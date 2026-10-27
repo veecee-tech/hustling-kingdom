@@ -450,6 +450,8 @@ describe('request defenses', () => {
       'character_skills',
       'character_stats',
       'characters',
+      'hustle_attempts',
+      'hustles',
       'idempotency_records',
       'job_assignments',
       'jobs',

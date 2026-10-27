@@ -50,7 +50,8 @@ configuration for reproducible upgrades; `jobs:seed` also configures fresh catal
 Sales customer work builds commercial capability; photography provides a bridge
 from communication into creative technical tools. These deliberate cross-skill
 bridges keep Business and Technology reachable without a training button or circular
-requirements. Trading and Street have no active earn sources and gate no active jobs.
+requirements. Trading has no active earn source. Phase 6 activates Street through
+abstract underground attempts; Street still gates no active jobs.
 No vehicle, education, Heat or Reputation progression is added.
 
 Salary remains the Phase 4 base-pay snapshot. Skill and Performance multipliers
@@ -120,5 +121,8 @@ after XP mutation. Browser tests cover six beginner skills, XP, reload, level-up
 job unlock and starting better work on mobile and desktop. The job-path test checks
 reachability from active XP sources without building a generic graph framework.
 
-Future gameplay can call SkillsService inside its approved transaction. Phase 6
-Hustles, Phase 7 Heat/Reputation and later recovery systems are not implemented.
+Phase 6 Hustles call SkillsService inside the same transaction as the immutable
+attempt, Energy and Economy ledger changes. Outcome-specific XP is snapshotted;
+retries award nothing again. Me includes configured hustle sources and the next
+Street opportunity. The same level curve and cap apply. See [Hustles](HUSTLES.md).
+Phase 7 Heat/Reputation and later recovery systems are not implemented.

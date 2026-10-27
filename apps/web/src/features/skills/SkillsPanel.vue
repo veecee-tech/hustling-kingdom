@@ -66,7 +66,8 @@ onMounted(() => void skills.load());
         </p>
         <div v-if="detail.nextUnlock" class="skill-next">
           <p class="eyebrow">NEXT OPPORTUNITY</p>
-          <RouterLink :to="`/jobs/${detail.nextUnlock.id}`"
+          <RouterLink
+            :to="`${detail.nextUnlock.type === 'HUSTLE' ? '/hustles' : '/jobs'}/${detail.nextUnlock.id}`"
             >{{ detail.nextUnlock.name }} · {{ detail.name }} Lv.
             {{ detail.nextUnlock.requiredLevel }}</RouterLink
           >

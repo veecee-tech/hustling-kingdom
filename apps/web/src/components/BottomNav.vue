@@ -8,7 +8,10 @@ import GameIcon from './GameIcon.vue';
     >
     <RouterLink
       to="/hustle"
-      :class="{ 'is-active': $route.path.startsWith('/jobs') }"
+      :class="{
+        'is-active':
+          $route.path.startsWith('/jobs') || $route.path.startsWith('/hustles'),
+      }"
       active-class="is-active"
       ><GameIcon name="hustle" /><span>Hustle</span></RouterLink
     >

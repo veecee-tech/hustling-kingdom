@@ -56,6 +56,7 @@ pnpm prisma:deploy
 pnpm jobs:seed
 pnpm skills:seed
 pnpm skills:backfill
+pnpm hustles:seed
 pnpm dev
 ```
 
@@ -161,7 +162,7 @@ Tests participate in the existing `pnpm test`, `pnpm test:integration` and
 trace artifacts. See [authentication design](docs/AUTHENTICATION.md) for session,
 revocation and deployment details.
 
-Phase 4 adds the first playable work loop. Phase 5 adds durable Skills and job unlocks; underground hustles remain deferred.
+Phase 4 adds the first playable work loop. Phase 5 adds durable Skills and job unlocks. Phase 6 adds abstract Underground opportunities and durable server-selected outcomes.
 
 ### Character creation
 
@@ -230,3 +231,23 @@ Social Level 2 and unlock Sales Rep and Photographer within starting Energy.
 Salary, Energy, XP and level changes commit atomically; retries award once.
 Salary multipliers remain neutral. Long-term Energy recovery remains deferred.
 See [Skills implementation](docs/SKILLS.md) for mappings, thresholds and operations.
+
+### Underground — fictional risk
+
+After applying migrations and seeding skills, run `pnpm hustles:seed`. This rerunnable
+catalog preserves existing tuning. Open Hustle → Underground for opportunity terms,
+Street requirements, risk confirmation, durable results and history. See
+[Hustles implementation](docs/HUSTLES.md) for the probability, payout and loss rules.
+
+Attempts resolve immediately and atomically. Bank must cover entry cost plus the
+maximum additional loss before taking a risk. Entry cost is spent on every outcome;
+disaster adds the configured loss. Rewards, losses, Energy and Street XP commit
+together. Retrying an intent returns its saved result without another draw. Cooldown
+applies across all underground opportunities. Heat and Reputation stay unchanged.
+Long-term Energy recovery remains deferred; no reset is needed for the first Street
+level-up journey. Do not expose hidden outcome profiles through public APIs.
+
+`pnpm test:e2e` prepares deterministic, test-only opportunity rows and disables them
+afterwards. They are excluded from development and production catalogs and attempts.
+The fixture CLI refuses to run outside `NODE_ENV=test`; no outcome-control HTTP API
+exists. Normal seeded opportunities always use server cryptographic randomness.

@@ -41,6 +41,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm jobs:seed
+      - run: pnpm hustles:seed
       - run: pnpm skills:backfill
       - run: pnpm test:integration
       - run: pnpm build

@@ -1999,3 +1999,143 @@ meter {
     font-size: 0.75rem;
   }
 }
+.underground-experience {
+  color: var(--ink);
+}
+.underground-entry {
+  background: #e4d3c6;
+  border-color: #aa7960;
+}
+.underground-opportunities {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+.underground-notice {
+  display: grid;
+  gap: 0.4rem;
+  border: 1px solid #b69c7d;
+  border-left: 5px solid #845c46;
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: #f3e4cb;
+  box-shadow: 0 3px 0 #bb9c6b;
+}
+.underground-notice > strong {
+  font-size: 1.35rem;
+}
+.underground-notice > small,
+.underground-notice > em {
+  font-size: 0.8rem;
+  font-style: normal;
+}
+.opportunity-locked {
+  background: #e6e4d5;
+}
+.opportunity-action {
+  border-top: 1px solid #bfae90;
+  padding-top: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.hustle-detail {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.risk-badge {
+  width: fit-content;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #93543b;
+  border-radius: 0.4rem;
+  background: #f7ddbb;
+  color: #733b28;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+.risk-terms {
+  display: grid;
+  gap: 0.65rem;
+  padding-block: 0.8rem;
+  border-block: 1px solid #bcaf92;
+}
+.risk-terms dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.risk-terms dd {
+  margin: 0;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.risk-confirmation {
+  display: grid;
+  gap: 0.8rem;
+  border: 2px solid #a96732;
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: #fae9c9;
+}
+.hustle-result {
+  display: grid;
+  gap: 0.8rem;
+  text-align: center;
+}
+.outcome-emblem {
+  width: 58px;
+  height: 58px;
+  padding: 12px;
+  margin: 0.3rem auto;
+  border-radius: 50%;
+  background: #dce8be;
+  color: #44633a;
+}
+.hustle-net {
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  overflow-wrap: anywhere;
+  color: #35613e;
+}
+.outcome-disaster .outcome-emblem,
+.outcome-failure .outcome-emblem {
+  color: #8e3b2b;
+  background: #f1cfbb;
+}
+.outcome-disaster .hustle-net {
+  color: #9c2929;
+}
+.outcome-big_win {
+  border-top: 4px solid #c39832;
+  padding-top: 0.8rem;
+}
+.hustle-money-breakdown {
+  font-size: 0.85rem;
+  border-block: 1px solid #bcb590;
+  padding: 0.75rem 0;
+}
+.hustle-history {
+  margin-top: 1.8rem;
+}
+.hustle-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.7rem 0;
+}
+.hustle-history li {
+  border-bottom: 1px solid #c6b899;
+}
+.hustle-history a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.75rem 0;
+}
+.hustle-history small {
+  display: block;
+  color: var(--muted);
+}
+.hustle-history b {
+  overflow-wrap: anywhere;
+}

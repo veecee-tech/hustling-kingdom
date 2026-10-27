@@ -8,7 +8,7 @@ export class SkillRequirementDto {
   @ApiProperty() met!: boolean;
 }
 export class SkillUnlockDto {
-  @ApiProperty({ enum: ['JOB'] }) type!: 'JOB';
+  @ApiProperty({ enum: ['JOB', 'HUSTLE'] }) type!: 'JOB' | 'HUSTLE';
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() name!: string;
   @ApiProperty() requiredLevel!: number;

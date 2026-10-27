@@ -24,7 +24,8 @@
     "jobs:reset-energy": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/jobs/reset-energy.js",
     "skills:seed": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/skills/maintenance.js --seed",
     "skills:backfill": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/skills/maintenance.js --backfill",
-    "skills:verify": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/skills/maintenance.js "
+    "skills:verify": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/skills/maintenance.js ",
+    "hustles:seed": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/hustles/seed.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

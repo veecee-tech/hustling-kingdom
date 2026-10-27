@@ -68,6 +68,7 @@ model Character {
   transactions     WalletTransaction[]
   jobAssignments   JobAssignment[]
   skills           CharacterSkill[]
+  hustleAttempts   HustleAttempt[]
 
   @@map("characters")
 }
@@ -124,6 +125,8 @@ enum WalletTransactionType {
   SYSTEM_CREDIT
   SYSTEM_DEBIT
   JOB_SALARY
+  HUSTLE_REWARD
+  HUSTLE_LOSS
 }
 
 enum IdempotencyStatus {
@@ -256,6 +259,7 @@ model JobAssignment {
 }
 
 model Skill {
+  hustles      Hustle[]
   id           String           @id @default(uuid()) @db.Uuid
   code         String           @unique @db.VarChar(24)
   name         String           @db.VarChar(80)
@@ -270,6 +274,82 @@ model Skill {
   assignments  JobAssignment[]
 
   @@map("skills")
+}
+
+enum HustleOutcome {
+  BIG_WIN
+  SUCCESS
+  PARTIAL_SUCCESS
+  FAILURE
+  DISASTER
+}
+
+model Hustle {
+  id                 String          @id @default(uuid()) @db.Uuid
+  code               String          @unique @db.VarChar(64)
+  name               String          @db.VarChar(80)
+  description        String
+  locationLabel      String          @map("location_label") @db.VarChar(120)
+  tier               Int
+  entryCost          BigInt          @default(0) @map("entry_cost")
+  rewardMin          BigInt          @map("reward_min")
+  rewardMax          BigInt          @map("reward_max")
+  disasterLoss       BigInt          @default(0) @map("disaster_loss")
+  outcomeProfile     Json            @map("outcome_profile") @db.JsonB
+  baseSuccessBps     Int             @default(dbgenerated()) @map("base_success_bps")
+  riskLabel          String          @map("risk_label") @db.VarChar(16)
+  energyCost         Int             @map("energy_cost")
+  stressMin          Int             @default(0) @map("stress_min")
+  stressMax          Int             @default(0) @map("stress_max")
+  heatMin            Int             @default(0) @map("heat_min")
+  heatMax            Int             @default(0) @map("heat_max")
+  reputationMin      Int             @default(0) @map("reputation_min")
+  reputationMax      Int             @default(0) @map("reputation_max")
+  requiredReputation BigInt          @default(0) @map("required_reputation")
+  requiredSkillId    String          @map("required_skill_id") @db.Uuid
+  requiredSkillLevel Int             @map("required_skill_level")
+  requiredSkill      Skill           @relation(fields: [requiredSkillId], references: [id], onDelete: Restrict)
+  cooldownSeconds    Int             @map("cooldown_seconds")
+  futureRequirement  String?         @map("future_requirement") @db.VarChar(160)
+  isActive           Boolean         @default(true) @map("is_active")
+  testOnly           Boolean         @default(false) @map("test_only")
+  sortOrder          Int             @default(0) @map("sort_order")
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  attempts           HustleAttempt[]
+
+  @@map("hustles")
+}
+
+model HustleAttempt {
+  id                    String        @id @db.Uuid
+  characterId           String        @map("character_id") @db.Uuid
+  character             Character     @relation(fields: [characterId], references: [id], onDelete: Restrict)
+  hustleId              String        @map("hustle_id") @db.Uuid
+  hustle                Hustle        @relation(fields: [hustleId], references: [id], onDelete: Restrict)
+  hustleName            String        @map("hustle_name") @db.VarChar(80)
+  tier                  Int
+  outcome               HustleOutcome
+  entryCost             BigInt        @map("entry_cost")
+  rewardAmount          BigInt        @map("reward_amount")
+  lossAmount            BigInt        @map("loss_amount")
+  energySpent           Int           @map("energy_spent")
+  xpReward              BigInt        @map("xp_reward")
+  xpAwarded             BigInt        @map("xp_awarded")
+  previousLevel         Int           @map("previous_level")
+  currentLevel          Int           @map("current_level")
+  heatChange            Int           @default(0) @map("heat_change")
+  reputationChange      BigInt        @default(0) @map("reputation_change")
+  stressChange          Int           @default(0) @map("stress_change")
+  rngVersion            String        @map("rng_version") @db.VarChar(40)
+  configurationSnapshot Json          @map("configuration_snapshot") @db.JsonB
+  startedAt             DateTime      @map("started_at") @db.Timestamptz
+  resolvedAt            DateTime      @map("resolved_at") @db.Timestamptz
+  cooldownUntil         DateTime      @map("cooldown_until") @db.Timestamptz
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([characterId, createdAt(sort: Desc), id(sort: Desc)])
+  @@map("hustle_attempts")
 }
 
 model CharacterSkill {

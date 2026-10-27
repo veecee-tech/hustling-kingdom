@@ -196,7 +196,7 @@ for (const device of ['mobile', 'desktop'] as const) {
       .click();
     await expect(
       page.getByRole('dialog', { name: 'Hustle', exact: true }),
-    ).toContainText('still locked');
+    ).toContainText('Underground');
     await page.keyboard.press('Escape');
     await frameFits();
     await page.setViewportSize({ width: 768, height: 1000 });

@@ -190,7 +190,11 @@ importers:
 
   packages/config: {}
 
-  packages/game-rules: {}
+  packages/game-rules:
+    dependencies:
+      '@hk/shared':
+        specifier: workspace:*
+        version: link:../shared
 
   packages/shared: {}
 

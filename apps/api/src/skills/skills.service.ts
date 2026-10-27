@@ -19,6 +19,7 @@ import {
   type EconomyActor,
 } from '../economy/economy.service.js';
 import { PublicHttpError } from '../common/error.filter.js';
+import { AppConfig } from '../config/config.module.js';
 function code(value: string): SkillCode {
   if (!skillCodes.includes(value as SkillCode))
     throw new Error('Unknown skill code.');
@@ -29,6 +30,7 @@ export class SkillsService {
   constructor(
     @Inject(DatabaseService) private readonly db: DatabaseService,
     @Inject(EconomyService) private readonly economy: EconomyService,
+    @Inject(AppConfig) private readonly config: AppConfig,
   ) {}
   // Caller holds the shared User lock; composite PK also protects concurrent initialization.
   async initializeInTransaction(
@@ -140,6 +142,17 @@ export class SkillsService {
           orderBy: { skill: { code: 'asc' } },
         });
         const jobs = await tx.job.findMany({ where: { isActive: true } });
+        const hustles = await tx.hustle.findMany({
+          where: {
+            isActive: true,
+            futureRequirement: null,
+            requiredReputation: 0,
+            ...(this.config.values.nodeEnv === 'test'
+              ? {}
+              : { testOnly: false }),
+          },
+          orderBy: [{ requiredSkillLevel: 'asc' }, { sortOrder: 'asc' }],
+        });
         return {
           skills: states.map((state) => {
             const next = jobs
@@ -155,34 +168,84 @@ export class SkillsService {
                   a.requiredSkillLvl! - b.requiredSkillLvl! ||
                   a.sortOrder - b.sortOrder,
               )[0];
+            const nextHustle =
+              state.skill.code === 'STREET'
+                ? hustles.find(
+                    (h) =>
+                      h.requiredSkillId === state.skillId &&
+                      h.requiredSkillLevel > state.level,
+                  )
+                : undefined;
             return {
               code: code(state.skill.code),
               name: state.skill.name,
               description: state.skill.description,
               maxLevel: state.skill.maxLevel,
               ...skillProgress(state.xp, state.skill.maxLevel),
-              sources: jobs
-                .filter(
-                  (job) =>
-                    job.xpSkillId === state.skillId &&
-                    !job.futureRequirement &&
-                    job.reputationRequired === 0n,
-                )
-                .map((job) => job.name),
-              nextUnlock: next
+              sources: [
+                ...jobs
+                  .filter(
+                    (job) =>
+                      job.xpSkillId === state.skillId &&
+                      !job.futureRequirement &&
+                      job.reputationRequired === 0n,
+                  )
+                  .map((job) => job.name),
+                ...hustles
+                  .filter(
+                    (h) =>
+                      state.skill.code === 'STREET' &&
+                      h.requiredSkillId === state.skillId,
+                  )
+                  .map((h) => h.name),
+              ],
+              nextUnlock: nextHustle
                 ? {
-                    type: 'JOB',
-                    id: next.id,
-                    name: next.name,
-                    requiredLevel: next.requiredSkillLvl!,
+                    type: 'HUSTLE',
+                    id: nextHustle.id,
+                    name: nextHustle.name,
+                    requiredLevel: nextHustle.requiredSkillLevel,
                   }
-                : null,
+                : next
+                  ? {
+                      type: 'JOB',
+                      id: next.id,
+                      name: next.name,
+                      requiredLevel: next.requiredSkillLvl!,
+                    }
+                  : null,
             };
           }),
         };
       },
       { timeout: 15000 },
     );
+  }
+  // Internal gameplay seam. Caller owns the User lock, transaction and durable attempt.
+  async awardStreetInTransaction(
+    tx: Prisma.TransactionClient,
+    characterId: string,
+    reward: bigint,
+  ): Promise<SkillProgressionResult> {
+    const skill = await tx.skill.findUniqueOrThrow({
+      where: { code: 'STREET' },
+    });
+    const state = await tx.characterSkill.findUniqueOrThrow({
+      where: { characterId_skillId: { characterId, skillId: skill.id } },
+    });
+    const award = awardSkillXp(state.xp, reward, skill.maxLevel);
+    await tx.characterSkill.update({
+      where: { characterId_skillId: { characterId, skillId: skill.id } },
+      data: { xp: award.xp, level: award.currentLevel },
+    });
+    return {
+      skill: 'STREET',
+      name: skill.name,
+      xpAwarded: award.xpAwarded.toString(),
+      previousLevel: award.previousLevel,
+      currentLevel: award.currentLevel,
+      leveledUp: award.currentLevel > award.previousLevel,
+    };
   }
   async backfill(characterId?: string) {
     let inspected = 0,
