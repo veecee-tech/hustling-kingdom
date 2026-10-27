@@ -37,7 +37,8 @@ export class EconomyService {
   constructor(@Inject(DatabaseService) private readonly db: DatabaseService) {}
   private readonly logger = new StructuredLogger();
 
-  private async lockActor(
+  // Server-only coordination seam: acquire User lock before any gameplay/domain locks.
+  async lockActor(
     tx: Prisma.TransactionClient,
     actor: EconomyActor,
   ): Promise<void> {
@@ -170,7 +171,7 @@ export class EconomyService {
     key: string,
     correlationId: string,
     reference?: { type: string; id: string },
-  ): Promise<void> {
+  ): Promise<string> {
     if (account !== 'CASH' && account !== 'BANK')
       throw new PublicHttpError(
         400,
@@ -183,7 +184,7 @@ export class EconomyService {
     const before = account === 'CASH' ? wallet.cashBalance : wallet.bankBalance;
     const after = balanceAfter(before, amount, direction);
     // Database BEFORE INSERT validates the chain and materializes balances. No other module writes them.
-    await tx.walletTransaction.create({
+    const entry = await tx.walletTransaction.create({
       data: {
         walletId,
         characterId: wallet.characterId,
@@ -199,8 +200,49 @@ export class EconomyService {
         referenceId: reference?.id,
       },
     });
+    return entry.id;
   }
 
+  // Caller owns the transaction and User lock. Only Economy appends/materializes money.
+  async creditJobSalaryInTransaction(
+    tx: Prisma.TransactionClient,
+    actor: EconomyActor,
+    assignmentId: string,
+    amount: bigint,
+    key: string,
+  ): Promise<{ wallet: WalletSummary; transactionId: string }> {
+    const wallet = await this.wallet(tx, actor.userId);
+    const assignment = await tx.jobAssignment.findFirst({
+      where: {
+        id: assignmentId,
+        characterId: wallet.characterId,
+        status: 'ACTIVE',
+      },
+    });
+    if (!assignment || assignment.baseReward !== amount)
+      throw new Error('Invalid salary intent.');
+    const transactionId = await this.append(
+      tx,
+      wallet.id,
+      'BANK',
+      amount,
+      'CREDIT',
+      'JOB_SALARY',
+      requireKey(key),
+      requestContext.getStore()?.requestId ?? `job_${randomUUID()}`,
+      { type: 'job_assignment', id: assignmentId },
+    );
+    return {
+      transactionId,
+      wallet: await this.getWalletInTransaction(tx, actor.userId),
+    };
+  }
+  async getWalletInTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<WalletSummary> {
+    return summary(await this.wallet(tx, userId));
+  }
   private async mutate(
     actor: EconomyActor,
     keyValue: string,

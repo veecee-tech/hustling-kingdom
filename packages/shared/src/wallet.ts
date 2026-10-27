@@ -11,7 +11,8 @@ export type WalletTransactionType =
   | 'CASH_DEPOSIT'
   | 'CASH_WITHDRAWAL'
   | 'SYSTEM_CREDIT'
-  | 'SYSTEM_DEBIT';
+  | 'SYSTEM_DEBIT'
+  | 'JOB_SALARY';
 export interface WalletEntry {
   id: string;
   account: WalletAccount;

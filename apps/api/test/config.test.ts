@@ -27,6 +27,25 @@ describe('server configuration', () => {
     ])
       expect(() => validateEnvironment({ ...valid, [key]: '-1' })).toThrow(key);
   });
+  it('gates development work timing outside production', () => {
+    expect(() =>
+      validateEnvironment({ ...valid, JOBS_DEV_DURATION_SECONDS: '1' }),
+    ).toThrow('JOBS_DEV_DURATION_SECONDS');
+    expect(
+      validateEnvironment({
+        ...valid,
+        NODE_ENV: 'test',
+        JOBS_DEV_DURATION_SECONDS: '1',
+      }).jobsDevDurationSeconds,
+    ).toBe(1);
+    expect(() =>
+      validateEnvironment({
+        ...valid,
+        NODE_ENV: 'test',
+        JOBS_DEV_DURATION_SECONDS: '0',
+      }),
+    ).toThrow('JOBS_DEV_DURATION_SECONDS');
+  });
   it('parses valid settings', () => {
     expect(validateEnvironment(valid).port).toBe(3000);
   });

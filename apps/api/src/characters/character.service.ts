@@ -40,6 +40,22 @@ export class CharacterService {
       );
     return character;
   }
+  async ownInTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<CharacterResponse> {
+    const row = await tx.character.findUnique({
+      where: { userId },
+      include: { stats: true },
+    });
+    if (!row)
+      throw new PublicHttpError(
+        404,
+        'CHARACTER_REQUIRED',
+        'Create your character first.',
+      );
+    return characterResponse(row);
+  }
   // Use the same User lock as authentication. Recheck account/session eligibility after waiting.
   private async lock(
     tx: Prisma.TransactionClient,

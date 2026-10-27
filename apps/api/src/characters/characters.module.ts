@@ -1,3 +1,4 @@
+import { CharacterStatsService } from './character-stats.service.js';
 import { Module } from '@nestjs/common';
 import { EconomyModule } from '../economy/economy.module.js';
 import { AuthModule } from '../auth/auth.module.js';
@@ -8,6 +9,7 @@ import { CharacterService } from './character.service.js';
 @Module({
   imports: [AuthModule, EconomyModule],
   controllers: [CharacterController, MeController],
-  providers: [CharacterService],
+  providers: [CharacterService, CharacterStatsService],
+  exports: [CharacterService, CharacterStatsService],
 })
 export class CharactersModule {}

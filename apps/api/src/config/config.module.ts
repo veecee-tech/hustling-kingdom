@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { parseHttpOrigin } from '@hk/validation';
 
 export interface Environment {
+  jobsDevDurationSeconds?: number;
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   webOrigin: string;
@@ -81,7 +82,16 @@ export function validateEnvironment(source: NodeJS.ProcessEnv): Environment {
       'Invalid JWT_ACCESS_SECRET; supply a private random secret of at least 32 bytes.',
     );
   }
+  const jobsDevDurationSeconds =
+    source.JOBS_DEV_DURATION_SECONDS === undefined
+      ? undefined
+      : integer('JOBS_DEV_DURATION_SECONDS', 30, 1, 60);
+  if (mode === 'production' && jobsDevDurationSeconds !== undefined)
+    throw new ConfigurationError(
+      'JOBS_DEV_DURATION_SECONDS is unavailable in production.',
+    );
   return {
+    jobsDevDurationSeconds,
     nodeEnv: mode as Environment['nodeEnv'],
     port,
     webOrigin,

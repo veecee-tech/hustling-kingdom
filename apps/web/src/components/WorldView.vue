@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { useJobsStore } from '../features/jobs/store';
 import { useAuthStore } from '../features/auth/store';
 import GameIcon from './GameIcon.vue';
 import CharacterAvatar from './CharacterAvatar.vue';
 const auth = useAuthStore();
+const jobs = useJobsStore();
 </script>
 <template>
   <section
@@ -121,6 +123,23 @@ const auth = useAuthStore();
       <span class="location-dot" />Old Town <span>/</span> Family House
     </div>
     <template v-if="auth.character">
+      <aside
+        v-if="!jobs.loading && !jobs.error && (!jobs.hasWorked || jobs.active)"
+        class="first-move"
+      >
+        <small>{{ jobs.active ? 'ON THE CLOCK' : 'FIRST MOVE' }}</small>
+        <p>
+          {{
+            jobs.active
+              ? `${jobs.active.jobName} shift in progress.`
+              : 'Welcome to Kingdom City. Ready to find work?'
+          }}
+        </p>
+        <RouterLink :to="jobs.active ? '/jobs/work' : '/jobs'"
+          >{{ jobs.active ? 'Resume shift' : 'Find your first job' }}
+          <GameIcon name="arrow"
+        /></RouterLink>
+      </aside>
       <div class="world-player">
         <span class="player-name">{{ auth.character.name }}</span
         ><CharacterAvatar
@@ -145,6 +164,9 @@ const auth = useAuthStore();
         <p>Your corner of Kingdom City.</p>
       </div>
       <div class="world-actions">
+        <RouterLink to="/jobs" class="game-button secondary"
+          >Find work</RouterLink
+        >
         <RouterLink to="/phone" class="game-button primary"
           ><GameIcon name="phone" />Open phone</RouterLink
         ><button disabled title="Rest is not available yet">

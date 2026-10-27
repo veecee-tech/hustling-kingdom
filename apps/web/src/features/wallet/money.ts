@@ -8,5 +8,6 @@ export const entryLabels = {
   CASH_DEPOSIT: 'Cash moved to bank',
   CASH_WITHDRAWAL: 'Bank moved to cash',
   SYSTEM_CREDIT: 'Game credit',
+  JOB_SALARY: 'Job salary',
   SYSTEM_DEBIT: 'Game expense',
 } as const;

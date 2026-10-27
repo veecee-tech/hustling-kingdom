@@ -440,7 +440,7 @@ describe('request defenses', () => {
       configuration.values.authRateLimit = 1000;
     }
   });
-  it('keeps the database scoped to accounts and Phase 2 character identity', async () => {
+  it('keeps the database scoped to implemented account, character, economy and job domains', async () => {
     const rows = await db.client.$queryRaw<
       Array<{ tablename: string }>
     >`SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`;
@@ -450,6 +450,8 @@ describe('request defenses', () => {
       'character_stats',
       'characters',
       'idempotency_records',
+      'job_assignments',
+      'jobs',
       'users',
       'wallet_transactions',
       'wallets',

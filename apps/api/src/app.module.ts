@@ -1,3 +1,4 @@
+import { JobsModule } from './jobs/jobs.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
@@ -18,6 +19,7 @@ import { AuthModule } from './auth/auth.module.js';
     HealthModule,
     AuthModule,
     CharactersModule,
+    JobsModule,
   ],
 })
 export class AppModule {}

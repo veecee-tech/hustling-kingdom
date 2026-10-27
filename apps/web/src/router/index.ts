@@ -1,3 +1,5 @@
+import JobsPage from '../features/jobs/JobsPage.vue';
+import HustlePage from '../features/jobs/HustlePage.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import PhonePage from '../pages/PhonePage.vue';
 import LockedPage from '../pages/LockedPage.vue';
@@ -10,6 +12,24 @@ import CreateCharacterPage from '../features/character/CreateCharacterPage.vue';
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/jobs',
+      name: 'jobs',
+      component: JobsPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
+    {
+      path: '/jobs/work',
+      name: 'job-work',
+      component: JobsPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
+    {
+      path: '/jobs/:jobId',
+      name: 'job-detail',
+      component: JobsPage,
+      meta: { requiresAuth: true, requiresCharacter: true },
+    },
     {
       path: '/phone',
       name: 'phone',
@@ -25,7 +45,7 @@ export const router = createRouter({
     {
       path: '/hustle',
       name: 'hustle',
-      component: LockedPage,
+      component: HustlePage,
       meta: { requiresAuth: true, requiresCharacter: true },
     },
     {

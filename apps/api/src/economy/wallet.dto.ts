@@ -54,6 +54,7 @@ export class WalletEntryDto implements WalletEntry {
       'CASH_WITHDRAWAL',
       'SYSTEM_CREDIT',
       'SYSTEM_DEBIT',
+      'JOB_SALARY',
     ],
   })
   transactionType!: WalletTransactionType;

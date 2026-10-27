@@ -6,7 +6,10 @@ import GameIcon from './GameIcon.vue';
     <RouterLink to="/" exact-active-class="is-active"
       ><GameIcon name="home" /><span>Home</span></RouterLink
     >
-    <RouterLink to="/hustle" active-class="is-active"
+    <RouterLink
+      to="/hustle"
+      :class="{ 'is-active': $route.path.startsWith('/jobs') }"
+      active-class="is-active"
       ><GameIcon name="hustle" /><span>Hustle</span></RouterLink
     >
     <RouterLink to="/city" active-class="is-active"

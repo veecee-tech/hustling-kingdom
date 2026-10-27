@@ -26,6 +26,7 @@ export default defineConfig({
         API_PORT: '3100',
         WEB_ORIGIN: 'http://127.0.0.1:5174',
         NODE_ENV: 'test',
+        JOBS_DEV_DURATION_SECONDS: '4',
         AUTH_RATE_LIMIT: '1000',
         REDIS_URL: 'redis://127.0.0.1:6379/2',
       },

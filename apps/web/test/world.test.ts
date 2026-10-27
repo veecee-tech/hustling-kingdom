@@ -21,6 +21,7 @@ function navigation() {
       { path: '/phone', name: 'phone', component: PhonePage },
       { path: '/wallet', name: 'wallet', component: PhonePage },
       { path: '/city', name: 'city', component: LockedPage },
+      { path: '/jobs', component: PhonePage },
       { path: '/hustle', name: 'hustle', component: LockedPage },
     ],
   });
@@ -66,13 +67,15 @@ it('provides visual, labeled appearance choices while preserving the other selec
   expect(wrapper.findAll('.option-preview svg').length).toBeGreaterThan(10);
   wrapper.unmount();
 });
-it('keeps all future phone apps locked and Bank as the only working app', async () => {
+it('keeps future phone apps locked while Bank and Jobs are available', async () => {
   const router = navigation();
   await router.push('/phone');
   const wrapper = mount(PhonePage, { global: { plugins: [router] } });
-  expect(wrapper.findAll('.phone-apps button:disabled')).toHaveLength(5);
-  expect(wrapper.get('.phone-apps a').attributes('href')).toBe('/wallet');
-  await wrapper.get('.phone-apps a').trigger('click');
+  expect(wrapper.findAll('.phone-apps button:disabled')).toHaveLength(4);
+  expect(wrapper.get('.phone-apps a[href="/wallet"]').attributes('href')).toBe(
+    '/wallet',
+  );
+  await wrapper.get('.phone-apps a[href="/wallet"]').trigger('click');
   await flushPromises();
   expect(router.currentRoute.value.name).toBe('wallet');
   wrapper.unmount();

@@ -19,7 +19,9 @@
     "prisma:migrate": "pnpm --filter @hk/api prisma:migrate",
     "prisma:deploy": "pnpm --filter @hk/api prisma:deploy",
     "economy:backfill": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/economy/maintenance.js --backfill",
-    "economy:reconcile": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/economy/maintenance.js"
+    "economy:reconcile": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/economy/maintenance.js",
+    "jobs:seed": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/jobs/seed.js",
+    "jobs:reset-energy": "pnpm --filter \"./packages/*\" build && pnpm --filter @hk/api build && pnpm --filter @hk/api exec node dist/jobs/reset-energy.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

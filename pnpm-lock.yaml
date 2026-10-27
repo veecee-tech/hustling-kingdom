@@ -65,6 +65,9 @@ importers:
       '@hk/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@hk/game-rules':
+        specifier: workspace:*
+        version: link:../../packages/game-rules
       '@hk/shared':
         specifier: workspace:*
         version: link:../../packages/shared

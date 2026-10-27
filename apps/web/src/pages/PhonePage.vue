@@ -10,8 +10,11 @@ import GameIcon from '../components/GameIcon.vue';
       <RouterLink to="/wallet"
         ><span class="app-tile bank-tile"><GameIcon name="wallet" /></span
         >Bank</RouterLink
+      ><RouterLink to="/jobs"
+        ><span class="app-tile work-tile"><GameIcon name="work" /></span
+        >Jobs</RouterLink
       ><button
-        v-for="app in ['Messages', 'Jobs', 'Trading', 'Properties', 'Dating']"
+        v-for="app in ['Messages', 'Trading', 'Properties', 'Dating']"
         :key="app"
         disabled
       >

@@ -138,7 +138,14 @@ export const useWalletStore = defineStore('wallet', () => {
       if (version === epoch) moving.value = false;
     }
   }
+  function applyServerSnapshot(
+    characterId: string,
+    value: WalletSummary,
+  ): void {
+    if (owner === characterId) accept(value);
+  }
   return {
+    applyServerSnapshot,
     wallet,
     entries,
     nextCursor,

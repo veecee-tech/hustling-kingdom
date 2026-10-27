@@ -52,7 +52,8 @@ development-only credentials. Never reuse them for deployment.
 ```sh
 docker compose up -d --wait
 pnpm prisma:generate
-pnpm prisma:migrate
+pnpm prisma:deploy
+pnpm jobs:seed
 pnpm dev
 ```
 
@@ -126,7 +127,7 @@ queue, no workers and no scheduled gameplay. Phaser is deferred to Phase 20.
 apps/api               NestJS infrastructure modules and Prisma
 apps/web               Vue shell, router, Pinia and typed API client
 packages/shared        Public API contracts
-packages/game-rules    Empty, testable deterministic-rules package boundary
+packages/game-rules    Pure deterministic job eligibility, pay, energy and timing rules
 packages/validation    Shared explicit-origin validation
 packages/config        Public protocol constants only
 infrastructure         Development infrastructure notes
@@ -158,7 +159,7 @@ Tests participate in the existing `pnpm test`, `pnpm test:integration` and
 trace artifacts. See [authentication design](docs/AUTHENTICATION.md) for session,
 revocation and deployment details.
 
-Phase 3 wallet/ledger and game UI are implemented. Jobs and subsequent gameplay remain deferred.
+Phase 4 adds the first playable work loop: find a job, finish a timed shift, spend Energy and receive salary in Bank. Skills and underground hustles remain deferred.
 
 ### Character creation
 
@@ -187,5 +188,30 @@ See [economy implementation](docs/ECONOMY-IMPLEMENTATION.md) and
 [world-first UI guide](docs/UI-UX.md). Phase 3.1 establishes the Family House world,
 compact HUD and route-driven panels. `/phone` opens the device launcher; its Bank app
 (`/wallet`) provides fictional cash/bank moves and paginated history. `/account` opens
-Me; `/city` and `/hustle` open locked previews. Home stays within the viewport.
-No Phase 4 jobs, travel, stat recovery or Phaser gameplay are implemented.
+Me; `/city` remains a locked preview. `/hustle` opens the work hub and `/jobs`
+opens the noticeboard, detail and active-shift panels. Home stays within the viewport.
+Travel, production rest recovery and Phaser gameplay remain deferred.
+
+### Jobs — first playable build
+
+After migrations, run `pnpm jobs:seed`. Its single SQL catalog is rerunnable and
+preserves existing catalog tuning. Cleaner and Shop Assistant are immediately
+available; higher roles explain their future progression requirements. Salary is
+paid into Bank through EconomyModule, atomically with energy and assignment state.
+See [Jobs implementation](docs/JOBS.md) for the contracts and invariants.
+
+Cleaner shifts take 30 seconds and cost 10 Energy. Shop Assistant shifts take 45
+seconds and cost 12. For local testing only, set `JOBS_DEV_DURATION_SECONDS=2`
+(1–60); production rejects this override. Playwright supplies its own short test timing.
+The browser cannot shorten a shift or choose its reward.
+
+Recovery remains a documented alpha limitation: 100 Energy supports ten Cleaner
+shifts. For development/test fixtures only, restore energy using:
+
+```sh
+pnpm jobs:reset-energy YOUR_LOCAL_CHARACTER_UUID
+```
+
+This operator CLI is rejected in production, exposes no player endpoint, and
+changes no money. Do not use it during the first-playable verification journey.
+Existing players need no new character or starting-wallet initialization.

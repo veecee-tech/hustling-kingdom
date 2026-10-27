@@ -66,6 +66,7 @@ model Character {
   stats            CharacterStats?
   wallet           Wallet?
   transactions     WalletTransaction[]
+  jobAssignments   JobAssignment[]
 
   @@map("characters")
 }
@@ -121,6 +122,7 @@ enum WalletTransactionType {
   CASH_WITHDRAWAL
   SYSTEM_CREDIT
   SYSTEM_DEBIT
+  JOB_SALARY
 }
 
 enum IdempotencyStatus {
@@ -161,6 +163,7 @@ model WalletTransaction {
   createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz
   wallet          Wallet                @relation(fields: [walletId, characterId], references: [id, characterId], onDelete: Restrict)
   character       Character             @relation(fields: [characterId], references: [id], onDelete: Restrict)
+  jobAssignment   JobAssignment?
 
   @@unique([walletId, sequence])
   @@index([walletId, account, sequence(sort: Desc)])
@@ -186,4 +189,55 @@ model IdempotencyRecord {
 
   @@unique([userId, operation, key])
   @@map("idempotency_records")
+}
+
+enum JobAssignmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+model Job {
+  id                 String          @id @default(uuid()) @db.Uuid
+  code               String          @unique @db.VarChar(64)
+  name               String          @db.VarChar(80)
+  description        String
+  locationLabel      String          @map("location_label") @db.VarChar(120)
+  baseReward         BigInt          @map("base_reward")
+  energyCost         Int             @map("energy_cost")
+  stressChange       Int             @default(0) @map("stress_change")
+  cooldownSeconds    Int             @map("cooldown_seconds")
+  reputationRequired BigInt          @default(0) @map("reputation_required")
+  futureRequirement  String?         @map("future_requirement") @db.VarChar(160)
+  isActive           Boolean         @default(true) @map("is_active")
+  sortOrder          Int             @default(0) @map("sort_order")
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  assignments        JobAssignment[]
+
+  @@map("jobs")
+}
+
+model JobAssignment {
+  id            String              @id @default(uuid()) @db.Uuid
+  characterId   String              @map("character_id") @db.Uuid
+  jobId         String              @map("job_id") @db.Uuid
+  status        JobAssignmentStatus @default(ACTIVE)
+  startedAt     DateTime            @map("started_at") @db.Timestamptz
+  completesAt   DateTime            @map("completes_at") @db.Timestamptz
+  completedAt   DateTime?           @map("completed_at") @db.Timestamptz
+  baseReward    BigInt              @map("base_reward")
+  energyCost    Int                 @map("energy_cost")
+  rewardAmount  BigInt?             @map("reward_amount")
+  transactionId String?             @unique @map("transaction_id") @db.Uuid
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  character     Character           @relation(fields: [characterId], references: [id], onDelete: Restrict)
+  job           Job                 @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  transaction   WalletTransaction?  @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+
+  @@index([characterId, status])
+  @@index([characterId, startedAt(sort: Desc), id(sort: Desc)])
+  @@map("job_assignments")
 }

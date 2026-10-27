@@ -99,8 +99,8 @@ for (const device of ['mobile', 'desktop'] as const) {
       page.getByRole('button', { name: 'Messages Locked', exact: true }),
     ).toBeDisabled();
     await expect(
-      page.getByRole('button', { name: 'Jobs Locked', exact: true }),
-    ).toBeDisabled();
+      page.getByRole('link', { name: 'Jobs', exact: true }),
+    ).toBeVisible();
     await shot('phone');
     await page.getByRole('link', { name: 'Bank', exact: true }).click();
     await expect(page).toHaveURL('/wallet');
