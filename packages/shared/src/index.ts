@@ -30,3 +30,4 @@ export interface MeResponse {
   character: CharacterResponse | null;
 }
 export * from './jobs.js';
+export * from './skills.js';

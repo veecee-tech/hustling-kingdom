@@ -67,6 +67,7 @@ model Character {
   wallet           Wallet?
   transactions     WalletTransaction[]
   jobAssignments   JobAssignment[]
+  skills           CharacterSkill[]
 
   @@map("characters")
 }
@@ -199,6 +200,12 @@ enum JobAssignmentStatus {
 }
 
 model Job {
+  requiredSkillId    String?         @map("required_skill_id") @db.Uuid
+  requiredSkillLvl   Int?            @map("required_skill_lvl")
+  requiredSkill      Skill?          @relation("JobRequirement", fields: [requiredSkillId], references: [id], onDelete: Restrict)
+  xpSkillId          String?         @map("xp_skill_id") @db.Uuid
+  xpSkill            Skill?          @relation("JobXp", fields: [xpSkillId], references: [id], onDelete: Restrict)
+  xpReward           BigInt          @default(0) @map("xp_reward")
   id                 String          @id @default(uuid()) @db.Uuid
   code               String          @unique @db.VarChar(64)
   name               String          @db.VarChar(80)
@@ -220,6 +227,12 @@ model Job {
 }
 
 model JobAssignment {
+  xpSkillId     String?             @map("xp_skill_id") @db.Uuid
+  xpSkill       Skill?              @relation(fields: [xpSkillId], references: [id], onDelete: Restrict)
+  xpReward      BigInt              @default(0) @map("xp_reward")
+  xpAwarded     BigInt              @default(0) @map("xp_awarded")
+  previousLevel Int?                @map("previous_level")
+  currentLevel  Int?                @map("current_level")
   id            String              @id @default(uuid()) @db.Uuid
   characterId   String              @map("character_id") @db.Uuid
   jobId         String              @map("job_id") @db.Uuid
@@ -240,4 +253,34 @@ model JobAssignment {
   @@index([characterId, status])
   @@index([characterId, startedAt(sort: Desc), id(sort: Desc)])
   @@map("job_assignments")
+}
+
+model Skill {
+  id           String           @id @default(uuid()) @db.Uuid
+  code         String           @unique @db.VarChar(24)
+  name         String           @db.VarChar(80)
+  description  String
+  maxLevel     Int              @default(10) @map("max_level")
+  isActive     Boolean          @default(true) @map("is_active")
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  characters   CharacterSkill[]
+  requiredJobs Job[]            @relation("JobRequirement")
+  xpJobs       Job[]            @relation("JobXp")
+  assignments  JobAssignment[]
+
+  @@map("skills")
+}
+
+model CharacterSkill {
+  characterId String    @map("character_id") @db.Uuid
+  skillId     String    @map("skill_id") @db.Uuid
+  level       Int       @default(1)
+  xp          BigInt    @default(0)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Restrict)
+
+  @@id([characterId, skillId])
+  @@map("character_skills")
 }

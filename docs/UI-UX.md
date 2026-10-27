@@ -1,5 +1,15 @@
 # Hustling Kingdom — world-first UI
 
+## Phase 5 progression experience
+
+Me now includes a compact six-skill roster, semantic XP meters, level text and
+contextual skill detail with work sources and next known opportunity. Trading and
+Street explicitly have no active XP source. Jobs show authoritative required/current
+levels. Completion announces XP, level-up and real newly opened job gates. Full skill
+state remains out of the HUD; no training button, audio, Rest or game clock is added.
+The later historical descriptions of Skills as deferred are superseded by this slice.
+World → HUD → contextual panels and all ALPHA art labels remain unchanged.
+
 ## Art approval status
 
 WORLD-FIRST UI ARCHITECTURE: APPROVED

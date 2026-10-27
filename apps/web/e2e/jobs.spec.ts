@@ -112,8 +112,8 @@ for (const device of ['mobile', 'desktop'] as const) {
     await expect(
       page.getByRole('heading', { name: 'Shift complete', exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole('status')).toContainText('+HK₦8,000');
-    await expect(page.getByRole('status')).toContainText('−10 Energy');
+    await expect(page.locator('.salary-reward')).toContainText('+HK₦8,000');
+    await expect(page.locator('.salary-reward')).toContainText('−10 Energy');
     await expect(page.locator('.player-hud')).toContainText('HK₦28,000');
     await expect(
       page.locator('.hud-stats [aria-label="Energy 90 out of 100"]'),

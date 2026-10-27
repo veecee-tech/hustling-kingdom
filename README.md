@@ -54,6 +54,8 @@ docker compose up -d --wait
 pnpm prisma:generate
 pnpm prisma:deploy
 pnpm jobs:seed
+pnpm skills:seed
+pnpm skills:backfill
 pnpm dev
 ```
 
@@ -159,7 +161,7 @@ Tests participate in the existing `pnpm test`, `pnpm test:integration` and
 trace artifacts. See [authentication design](docs/AUTHENTICATION.md) for session,
 revocation and deployment details.
 
-Phase 4 adds the first playable work loop: find a job, finish a timed shift, spend Energy and receive salary in Bank. Skills and underground hustles remain deferred.
+Phase 4 adds the first playable work loop. Phase 5 adds durable Skills and job unlocks; underground hustles remain deferred.
 
 ### Character creation
 
@@ -215,3 +217,16 @@ pnpm jobs:reset-energy YOUR_LOCAL_CHARACTER_UUID
 This operator CLI is rejected in production, exposes no player endpoint, and
 changes no money. Do not use it during the first-playable verification journey.
 Existing players need no new character or starting-wallet initialization.
+
+### Skills and progression
+
+Apply the additive migration, regenerate Prisma, seed jobs/skills and run
+`pnpm skills:backfill` before reopening player traffic. Existing characters are
+preserved. Repeating backfill creates no duplicate states or resets. New characters
+receive all six skills automatically. `pnpm skills:verify` checks XP/level consistency.
+
+Me shows six skills, XP and next opportunities. Two Shop Assistant shifts reach
+Social Level 2 and unlock Sales Rep and Photographer within starting Energy.
+Salary, Energy, XP and level changes commit atomically; retries award once.
+Salary multipliers remain neutral. Long-term Energy recovery remains deferred.
+See [Skills implementation](docs/SKILLS.md) for mappings, thresholds and operations.

@@ -41,12 +41,14 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm jobs:seed
+      - run: pnpm skills:backfill
       - run: pnpm test:integration
       - run: pnpm build
       - run: pnpm economy:backfill
       - run: pnpm economy:reconcile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+      - run: pnpm skills:verify
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

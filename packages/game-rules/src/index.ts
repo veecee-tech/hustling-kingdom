@@ -1,3 +1,4 @@
+export * from './skills.js';
 export interface JobEligibility {
   isActive: boolean;
   energyCost: number;

@@ -6,6 +6,7 @@ import { defaultAppearance, type Appearance } from '@hk/shared';
 import { characterApi } from '../character/api';
 import AppearancePicker from '../character/AppearancePicker.vue';
 import CharacterPreview from '../character/CharacterPreview.vue';
+import SkillsPanel from '../skills/SkillsPanel.vue';
 const auth = useAuthStore();
 const router = useRouter();
 const appearance = ref<Appearance>({
@@ -76,6 +77,7 @@ async function signOut(all: boolean): Promise<void> {
         Reputation {{ auth.character.stats.reputation }} · Heat
         {{ auth.character.stats.heat }}
       </p>
+      <SkillsPanel />
       <form class="space-y-4" @submit.prevent="saveAppearance">
         <AppearancePicker v-model="appearance" :disabled="saving" />
         <p v-if="message" :role="failed ? 'alert' : 'status'">{{ message }}</p>

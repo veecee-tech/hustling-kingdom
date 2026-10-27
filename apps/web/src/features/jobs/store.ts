@@ -11,6 +11,7 @@ import { api } from '../../api';
 import { ApiError } from '../../api/client';
 import { useAuthStore } from '../auth/store';
 import { useWalletStore } from '../wallet/store';
+import { useSkillsStore } from '../skills/store';
 export const useJobsStore = defineStore('jobs', () => {
   const auth = useAuthStore();
   const money = useWalletStore();
@@ -111,6 +112,7 @@ export const useJobsStore = defineStore('jobs', () => {
       // Original retry receipts may be old. Hydrate current state instead of applying historical stats/balances.
       await load();
       await money.load(characterId, true);
+      await useSkillsStore().load();
       return true;
     } catch (cause) {
       if (version !== epoch) return false;

@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  SkillRequirementDto,
+  SkillProgressionDto,
+  SkillUnlockDto,
+} from '../skills/skills.dto.js';
 import { CharacterDto } from '../characters/character.dto.js';
 import { WalletDto } from '../economy/wallet.dto.js';
 export class JobViewDto {
+  @ApiProperty({ type: SkillRequirementDto, nullable: true })
+  skillRequirement!: SkillRequirementDto | null;
+  @ApiProperty({ type: String, nullable: true }) xpSkill!: string | null;
+  @ApiProperty({ type: String }) xpReward!: string;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() code!: string;
   @ApiProperty() name!: string;
@@ -15,6 +24,9 @@ export class JobViewDto {
   @ApiProperty({ type: String, nullable: true }) lockReason!: string | null;
 }
 export class AssignmentDto {
+  @ApiProperty({ type: SkillProgressionDto, nullable: true })
+  skillProgress!: SkillProgressionDto | null;
+  @ApiProperty({ type: [SkillUnlockDto] }) unlocks!: SkillUnlockDto[];
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) jobId!: string;
   @ApiProperty() jobName!: string;

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useAuthStore } from '../features/auth/store';
 import { useWalletStore } from '../features/wallet/store';
 import { useJobsStore } from '../features/jobs/store';
+import { useSkillsStore } from '../features/skills/store';
 import PlayerHud from '../components/PlayerHud.vue';
 import BottomNav from '../components/BottomNav.vue';
 import WorldView from '../components/WorldView.vue';
@@ -11,6 +12,7 @@ import ContextPanel from '../components/ContextPanel.vue';
 const auth = useAuthStore();
 const money = useWalletStore();
 const jobs = useJobsStore();
+const skills = useSkillsStore();
 const refreshWork = () => {
   if (auth.character && !jobs.busy) void jobs.load();
 };
@@ -62,6 +64,7 @@ watch(
     } else {
       money.clear();
       jobs.clear();
+      skills.clear();
     }
   },
   { immediate: true },

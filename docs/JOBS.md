@@ -1,5 +1,18 @@
 # Phase 4 — Jobs and first playable build
 
+## Phase 5 integration (current behavior)
+
+SkillsModule now owns durable progression. The historical Phase 4 descriptions
+below explain the foundation; their future-skill placeholders are superseded by
+[SKILLS.md](SKILLS.md). Jobs now has relational required_skill_id/required_skill_lvl
+and XP skill/reward configuration. Cleaner and Shop Assistant stay open; Social 2
+unlocks Sales Rep/Photographer, which bridge into Business/Technology careers.
+Delivery Rider remains vehicle-locked. No Reputation or vehicle progression exists.
+Salary multipliers remain neutral. Start snapshots XP terms; completion atomically
+awards skill XP and levels through SkillsService alongside salary/Energy/receipts.
+Assignments retain traceable XP results; old Phase 4 shifts keep original no-XP terms.
+Job responses expose server-evaluated requirements, XP feedback and genuine unlocks.
+
 ## Ownership and scope
 
 JobsModule owns catalog eligibility, shift assignments and timing. CharacterStatsService

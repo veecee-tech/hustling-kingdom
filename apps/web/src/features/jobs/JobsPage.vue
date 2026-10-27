@@ -102,7 +102,11 @@ async function start(): Promise<void> {
           You can close this panel. Your shift stays active.
         </p>
       </div>
-      <div v-else-if="jobs.lastCompleted" class="shift-stage shift-complete">
+      <div
+        v-else-if="jobs.lastCompleted"
+        class="shift-stage shift-complete"
+        :class="{ 'has-progression': !!jobs.lastCompleted.skillProgress }"
+      >
         <GameIcon name="check" class="shift-check" />
         <p class="eyebrow">WORK PAID OFF</p>
         <h1>Shift complete</h1>
@@ -120,6 +124,40 @@ async function start(): Promise<void> {
           >
         </div>
         <p class="muted">Good work. Your money is in the bank.</p>
+        <section
+          v-if="jobs.lastCompleted.skillProgress"
+          class="xp-reward"
+          role="status"
+          aria-live="polite"
+        >
+          <p>
+            +{{ jobs.lastCompleted.skillProgress.xpAwarded }}
+            {{ jobs.lastCompleted.skillProgress.name }} XP
+          </p>
+          <div
+            v-if="jobs.lastCompleted.skillProgress.leveledUp"
+            class="level-up"
+          >
+            <strong>LEVEL UP!</strong>
+            <p>
+              {{ jobs.lastCompleted.skillProgress.name }} · Level
+              {{ jobs.lastCompleted.skillProgress.currentLevel }}
+            </p>
+          </div>
+          <div
+            v-for="unlock in jobs.lastCompleted.unlocks"
+            :key="unlock.id"
+            class="skill-next"
+          >
+            <strong>NEW JOB UNLOCKED</strong
+            ><RouterLink :to="`/jobs/${unlock.id}`"
+              >{{ unlock.name }} →</RouterLink
+            >
+          </div>
+          <RouterLink to="/account" class="work-back"
+            >See your skills</RouterLink
+          >
+        </section>
         <RouterLink to="/jobs" class="game-button primary w-full"
           >Find another shift</RouterLink
         ><RouterLink to="/phone" class="game-button secondary w-full"
@@ -156,8 +194,20 @@ async function start(): Promise<void> {
         </div>
         <p class="job-requirement">
           {{
-            selected.lockReason ?? 'No experience needed. Salary goes to Bank.'
+            selected.lockReason ??
+            (selected.skillRequirement
+              ? 'Skill requirement met. Salary goes to Bank.'
+              : 'No experience needed. Salary goes to Bank.')
           }}
+        </p>
+        <p v-if="selected.skillRequirement" class="job-requirement">
+          {{ selected.skillRequirement.name }} Lv.
+          {{ selected.skillRequirement.requiredLevel }}
+          {{ selected.skillRequirement.met ? '✓' : '' }} · Your level:
+          {{ selected.skillRequirement.currentLevel }}
+        </p>
+        <p v-if="selected.xpSkill" class="skill-work-reward">
+          Build {{ selected.xpSkill }} · +{{ selected.xpReward }} XP per shift
         </p>
         <button
           class="game-button primary w-full"
@@ -201,7 +251,15 @@ async function start(): Promise<void> {
                   job.energyCost
                 }}
                 <b>·</b> {{ job.durationSeconds }}s</span
-              ><em>{{ job.lockReason ?? 'Available · View shift' }}</em></span
+              ><em>{{ job.lockReason ?? 'Available · View shift' }}</em
+              ><small v-if="job.skillRequirement"
+                >{{ job.skillRequirement.name }} Lv.
+                {{ job.skillRequirement.requiredLevel }} · Yours
+                {{ job.skillRequirement.currentLevel }}
+                {{ job.skillRequirement.met ? '✓' : '' }}</small
+              ><small v-if="job.xpSkill"
+                >+{{ job.xpReward }} {{ job.xpSkill }} XP</small
+              ></span
             ><GameIcon
               :name="job.available ? 'arrow' : 'lock'"
               class="job-status-icon"

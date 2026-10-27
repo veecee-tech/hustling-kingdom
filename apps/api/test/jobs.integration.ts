@@ -10,6 +10,7 @@ import { AppConfig } from '../src/config/config.module.js';
 import { DatabaseService } from '../src/database/database.module.js';
 import { EconomyService } from '../src/economy/economy.service.js';
 import { CharacterService } from '../src/characters/character.service.js';
+import { SkillsService } from '../src/skills/skills.service.js';
 import { RedisService } from '../src/redis/redis.module.js';
 import { setupApplication } from '../src/setup.js';
 let app: INestApplication;
@@ -58,6 +59,8 @@ async function job(extra: object = {}) {
       baseReward: 8000n,
       energyCost: 10,
       cooldownSeconds: 30,
+      xpSkillId: '55000000-0000-4000-8000-000000000005',
+      xpReward: 15n,
       ...extra,
     },
   });
@@ -102,6 +105,10 @@ async function snapshot(characterId: string) {
     }),
     receipts: await db.client.idempotencyRecord.count({
       where: { user: { character: { id: characterId } } },
+    }),
+    skills: await db.client.characterSkill.findMany({
+      where: { characterId },
+      orderBy: { skillId: 'asc' },
     }),
   };
 }
@@ -412,6 +419,12 @@ describe('first playable work boundary', () => {
       expect(state.wallet.bankBalance).toBe(13000n);
       expect(state.entries).toBe(3);
       expect(
+        state.skills.find(
+          (s) => s.skillId === '55000000-0000-4000-8000-000000000005',
+        ),
+      ).toMatchObject({ xp: 15n, level: 1 });
+      expect(state.assignments[0]?.xpAwarded).toBe(15n);
+      expect(
         state.assignments.filter((r) => r.status === 'COMPLETED'),
       ).toHaveLength(1);
       expect((await post(a.token, `/jobs/${j.id}/start`)).body.error.code).toBe(
@@ -427,6 +440,23 @@ describe('first playable work boundary', () => {
     await wait();
     const before = await snapshot(a.characterId);
     const key = randomUUID();
+    const skills = app.get(SkillsService);
+    const award = skills.awardJobInTransaction.bind(skills);
+    const xpFailure = vi
+      .spyOn(skills, 'awardJobInTransaction')
+      .mockImplementationOnce(async (...args) => {
+        await award(...args);
+        throw new Error('private after XP');
+      });
+    try {
+      expect(
+        (await post(a.token, `/jobs/assignments/${shift.id}/complete`, key))
+          .status,
+      ).toBe(500);
+      expect(await snapshot(a.characterId)).toEqual(before);
+    } finally {
+      xpFailure.mockRestore();
+    }
     const fail = vi
       .spyOn(economy, 'creditJobSalaryInTransaction')
       .mockRejectedValueOnce(new Error('private database failure'));

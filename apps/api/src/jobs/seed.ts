@@ -12,6 +12,16 @@ try {
     'utf8',
   );
   await app.get(DatabaseService).client.$executeRawUnsafe(sql);
+  for (const file of ['seed-skills.sql', 'configure-job-skills.sql']) {
+    await app
+      .get(DatabaseService)
+      .client.$executeRawUnsafe(
+        await readFile(
+          new URL(`../../prisma/${file}`, import.meta.url),
+          'utf8',
+        ),
+      );
+  }
   console.log(
     JSON.stringify({ jobs: await app.get(DatabaseService).client.job.count() }),
   );

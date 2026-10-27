@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { SkillsService } from '../skills/skills.service.js';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   calculateJobPay,
@@ -38,6 +39,8 @@ const assignmentView = (
   pay: row.baseReward.toString(),
   energyCost: row.energyCost,
   rewardAmount: row.rewardAmount?.toString() ?? null,
+  skillProgress: null,
+  unlocks: [],
 });
 @Injectable()
 export class JobsService {
@@ -48,6 +51,7 @@ export class JobsService {
     @Inject(CharacterStatsService)
     private readonly stats: CharacterStatsService,
     @Inject(AppConfig) private readonly config: AppConfig,
+    @Inject(SkillsService) private readonly skills: SkillsService,
   ) {}
   private readonly logger = new StructuredLogger();
   private duration(job: Job): number {
@@ -82,38 +86,60 @@ export class JobsService {
         where: { isActive: true },
         orderBy: [{ sortOrder: 'asc' }, { code: 'asc' }],
       });
+      await this.skills.initializeInTransaction(tx, character.id);
       return {
         serverNow: new Date().toISOString(),
-        items: jobs.map((job) => {
-          const lockCode = jobLockReason(
-            job,
-            character.stats.energy,
-            BigInt(character.stats.reputation),
-            active > 0,
-          );
-          const reasons: Record<string, string> = {
-            JOB_DISABLED: 'This employer is not hiring.',
-            JOB_REQUIREMENTS_NOT_MET:
-              job.futureRequirement ?? 'Progression required.',
-            REPUTATION_REQUIRED: `Requires reputation ${job.reputationRequired}.`,
-            JOB_ALREADY_ACTIVE: 'Finish your current shift first.',
-            INSUFFICIENT_ENERGY:
-              'Not enough energy. Rest recovery is not available in this alpha.',
-          };
-          return {
-            id: job.id,
-            code: job.code,
-            name: job.name,
-            description: job.description,
-            locationLabel: job.locationLabel,
-            baseReward: job.baseReward.toString(),
-            energyCost: job.energyCost,
-            durationSeconds: this.duration(job),
-            available: !lockCode,
-            lockCode,
-            lockReason: lockCode ? reasons[lockCode]! : null,
-          };
-        }),
+        items: await Promise.all(
+          jobs.map(async (job) => {
+            const skillRequirement = await this.skills.requirement(
+              tx,
+              character.id,
+              job,
+            );
+            const xpSkill = job.xpSkillId
+              ? await tx.skill.findUniqueOrThrow({
+                  where: { id: job.xpSkillId },
+                })
+              : null;
+            const lockCode =
+              skillRequirement && !skillRequirement.met
+                ? 'JOB_REQUIREMENTS_NOT_MET'
+                : jobLockReason(
+                    job,
+                    character.stats.energy,
+                    BigInt(character.stats.reputation),
+                    active > 0,
+                  );
+            const reasons: Record<string, string> = {
+              JOB_DISABLED: 'This employer is not hiring.',
+              JOB_REQUIREMENTS_NOT_MET:
+                job.futureRequirement ??
+                (skillRequirement
+                  ? `Requires ${skillRequirement.name} Lv. ${skillRequirement.requiredLevel} · Yours Lv. ${skillRequirement.currentLevel}`
+                  : 'Progression required.'),
+              REPUTATION_REQUIRED: `Requires reputation ${job.reputationRequired}.`,
+              JOB_ALREADY_ACTIVE: 'Finish your current shift first.',
+              INSUFFICIENT_ENERGY:
+                'Not enough energy. Rest recovery is not available in this alpha.',
+            };
+            return {
+              id: job.id,
+              code: job.code,
+              name: job.name,
+              description: job.description,
+              locationLabel: job.locationLabel,
+              baseReward: job.baseReward.toString(),
+              energyCost: job.energyCost,
+              durationSeconds: this.duration(job),
+              available: !lockCode,
+              lockCode,
+              lockReason: lockCode ? reasons[lockCode]! : null,
+              skillRequirement,
+              xpSkill: xpSkill?.name ?? null,
+              xpReward: job.xpReward.toString(),
+            };
+          }),
+        ),
       };
     });
   }
@@ -136,11 +162,27 @@ export class JobsService {
         orderBy: [{ completedAt: 'desc' }, { id: 'desc' }],
         include: { job: true },
       });
+      const receipt = last
+        ? await tx.idempotencyRecord.findFirst({
+            where: {
+              userId: actor.userId,
+              operation: 'jobs.complete',
+              resourceId: last.id,
+            },
+            orderBy: { createdAt: 'asc' },
+          })
+        : null;
+      const lastView = last ? assignmentView(last) : null;
+      if (lastView && receipt) {
+        const original = receipt.responseBody as unknown as JobCompletion;
+        lastView.skillProgress = original.assignment.skillProgress ?? null;
+        lastView.unlocks = original.assignment.unlocks ?? [];
+      }
       return {
         character,
         wallet,
         activeJob: active ? assignmentView(active) : null,
-        lastCompletedJob: last ? assignmentView(last) : null,
+        lastCompletedJob: lastView,
         hasWorked: !!last,
         serverNow: new Date().toISOString(),
       };
@@ -217,6 +259,14 @@ export class JobsService {
           'JOB_NOT_FOUND',
           'This job is unavailable.',
         );
+      await this.skills.initializeInTransaction(tx, character.id);
+      const requirement = await this.skills.requirement(tx, character.id, job);
+      if (requirement && !requirement.met)
+        throw new PublicHttpError(
+          409,
+          'JOB_REQUIREMENTS_NOT_MET',
+          `Requires ${requirement.name} Lv. ${requirement.requiredLevel}.`,
+        );
       const active = await tx.jobAssignment.count({
         where: { characterId: character.id, status: 'ACTIVE' },
       });
@@ -241,6 +291,8 @@ export class JobsService {
           completesAt: new Date(now.getTime() + this.duration(job) * 1000),
           baseReward: calculateJobPay(job.baseReward),
           energyCost: job.energyCost,
+          xpSkillId: job.xpSkillId,
+          xpReward: job.xpReward,
         },
         include: { job: true },
       });
@@ -314,6 +366,12 @@ export class JobsService {
           pay,
           validKey,
         );
+        await this.skills.initializeInTransaction(tx, character.id);
+        const progression = await this.skills.awardJobInTransaction(
+          tx,
+          character.id,
+          row.id,
+        );
         const completed = await tx.jobAssignment.update({
           where: { id: row.id },
           data: {
@@ -321,11 +379,14 @@ export class JobsService {
             completedAt: now,
             rewardAmount: pay,
             transactionId: payment.transactionId,
+            xpAwarded: BigInt(progression.skillProgress?.xpAwarded ?? '0'),
+            previousLevel: progression.skillProgress?.previousLevel,
+            currentLevel: progression.skillProgress?.currentLevel,
           },
           include: { job: true },
         });
         const response: JobCompletion = {
-          assignment: assignmentView(completed),
+          assignment: { ...assignmentView(completed), ...progression },
           result: {
             salary: pay.toString(),
             energySpent: row.energyCost,

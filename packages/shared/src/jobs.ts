@@ -1,5 +1,10 @@
 import type { CharacterResponse } from './character.js';
 import type { WalletSummary } from './wallet.js';
+import type {
+  SkillRequirement,
+  SkillProgressionResult,
+  SkillUnlock,
+} from './skills.js';
 export interface JobView {
   id: string;
   code: string;
@@ -12,6 +17,9 @@ export interface JobView {
   available: boolean;
   lockCode: string | null;
   lockReason: string | null;
+  skillRequirement: SkillRequirement | null;
+  xpSkill: string | null;
+  xpReward: string;
 }
 export interface JobAssignmentView {
   id: string;
@@ -25,6 +33,8 @@ export interface JobAssignmentView {
   pay: string;
   energyCost: number;
   rewardAmount: string | null;
+  skillProgress: SkillProgressionResult | null;
+  unlocks: SkillUnlock[];
 }
 export interface JobsCatalog {
   items: JobView[];

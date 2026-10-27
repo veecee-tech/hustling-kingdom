@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { SkillsService } from '../skills/skills.service.js';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   appearanceCategories,
@@ -21,6 +22,7 @@ export class CharacterService {
   constructor(
     @Inject(DatabaseService) private readonly db: DatabaseService,
     @Inject(EconomyService) private readonly economy: EconomyService,
+    @Inject(SkillsService) private readonly skills: SkillsService,
   ) {}
 
   async find(userId: string): Promise<CharacterResponse | null> {
@@ -135,6 +137,7 @@ export class CharacterService {
       });
       const response = characterResponse(row);
       await this.economy.initializeInTransaction(tx, userId, row.id);
+      await this.skills.initializeInTransaction(tx, row.id);
       await tx.character.update({
         where: { id: row.id },
         data: {

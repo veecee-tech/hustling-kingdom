@@ -14,9 +14,19 @@ defineProps<{
     | 'phone'
     | 'work'
     | 'clean'
-    | 'check';
+    | 'check'
+    | 'technology'
+    | 'trading'
+    | 'social'
+    | 'fitness'
+    | 'street';
 }>();
 const paths = {
+  technology: 'M3 4h18v15H3zM7 9l3 3-3 3m6 0h4M7 22h10',
+  trading: 'M3 3v18h18M6 16l5-6 4 3 6-8m-5 0h5v5',
+  social: 'M3 4h18v13H9l-6 4zM7 8h10M7 12h6',
+  fitness: 'M2 9v6m3-9v12m0-6h14m0-6v12m3-9v6',
+  street: 'M7 2 3 22m14-20 4 20M12 3v4m0 3v4m0 3v4',
   work: 'M3 7h18v14H3zM8 7V3h8v4M3 12h18M10 12v3h4v-3',
   clean: 'm15 2 2 1-6 13M8 13l6 3-4 6-8-4zM5 16l6 3',
   check: 'm5 12 4 4L19 6',
